@@ -1,6 +1,6 @@
 {
   "name": "lookstall",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A graphical interface for installing various applications directly from their repositories using Docker.",
   "main": "src/main.js",
   "homepage": "./",
