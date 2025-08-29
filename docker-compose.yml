@@ -1,0 +1,990 @@
+version: '3.8'
+
+services:
+  # Atendimento & CRM
+  chatwoot:
+    image: chatwoot/chatwoot:latest
+    container_name: chatwoot
+    ports:
+      - "3000:3000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_DATABASE=chatwoot
+      - SECRET_KEY_BASE=replace_with_lengthy_secure_hex
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - chatwoot_data:/app/storage
+    profiles:
+      - chatwoot
+
+  evolution-api:
+    image: atendai/evolution-api:v2.0.0
+    container_name: evolution-api
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTHENTICATION_API_KEY=B6D711FCDE4D4FD5936544120E713976
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - QRCODE_LIMIT=30
+      - WEBSOCKET_ENABLED=false
+    profiles:
+      - evolution-api
+
+  woofed-crm:
+    image: woofed/crm:latest
+    container_name: woofed-crm
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=woofed
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+    depends_on:
+      - mysql
+    profiles:
+      - woofed-crm
+
+  twentycrm:
+    image: twentyhq/twenty:latest
+    container_name: twentycrm
+    ports:
+      - "3001:3000"
+    environment:
+      - POSTGRES_ADMIN_PASSWORD=postgres
+      - ACCESS_TOKEN_SECRET=replace_me_with_a_random_string_access
+      - LOGIN_TOKEN_SECRET=replace_me_with_a_random_string_login
+      - REFRESH_TOKEN_SECRET=replace_me_with_a_random_string_refresh
+    depends_on:
+      - postgres
+    profiles:
+      - twentycrm
+
+  krayin-crm:
+    image: krayin/laravel-crm:latest
+    container_name: krayin-crm
+    ports:
+      - "8081:80"
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_DATABASE=krayin
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+    depends_on:
+      - mysql
+    profiles:
+      - krayin-crm
+
+  mautic:
+    image: mautic/mautic:latest
+    ports:
+      - "8082:80"
+    environment:
+      - MAUTIC_DB_HOST=mysql
+      - MAUTIC_DB_USER=root
+      - MAUTIC_DB_PASSWORD=mypassword
+      - MAUTIC_DB_NAME=mautic
+    depends_on:
+      - mysql
+    profiles: ["mautic"]
+
+  # Automação & IA
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+    volumes:
+      - n8n_data:/home/node/.n8n
+    profiles: ["n8n"]
+
+  flowise:
+    image: flowiseai/flowise
+    ports:
+      - "3002:3000"
+    environment:
+      - PORT=3000
+      - FLOWISE_USERNAME=admin
+      - FLOWISE_PASSWORD=admin123
+    volumes:
+      - flowise_data:/root/.flowise
+    profiles: ["flowise"]
+
+  dify-ai:
+    image: langgenius/dify-web:latest
+    ports:
+      - "3003:3000"
+    environment:
+      - SECRET_KEY=sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=difyai123456
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=dify
+    depends_on:
+      - postgres
+    profiles: ["dify-ai"]
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    profiles: ["ollama"]
+
+  langflow:
+    image: langflowai/langflow:latest
+    ports:
+      - "7860:7860"
+    environment:
+      - LANGFLOW_DATABASE_URL=sqlite:///./langflow.db
+    profiles: ["langflow"]
+
+  langfuse:
+    image: langfuse/langfuse:latest
+    ports:
+      - "3004:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/langfuse
+      - NEXTAUTH_SECRET=mysecret
+      - SALT=mysalt
+    depends_on:
+      - postgres
+    profiles: ["langfuse"]
+
+  anything-llm:
+    image: mintplexlabs/anythingllm
+    ports:
+      - "3005:3001"
+    environment:
+      - STORAGE_DIR=/app/server/storage
+    volumes:
+      - anythingllm_storage:/app/server/storage
+    profiles: ["anything-llm"]
+
+  evo-ai:
+    image: evoai/evo-ai:latest
+    ports:
+      - "3006:3000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - evo_data:/app/data
+    profiles: ["evo-ai"]
+
+  # Chatbots & Comunicação
+  typebot:
+    image: baptistearno/typebot-builder:latest
+    ports:
+      - "3007:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:typebot@postgres:5432/typebot
+      - NEXTAUTH_URL=http://localhost:3007
+      - NEXTAUTH_URL_INTERNAL=http://localhost:3007
+      - ENCRYPTION_SECRET=47d4bb5b8c1a4b8e9c2f8a3d6e7f8g9h
+    depends_on:
+      - postgres
+    profiles: ["typebot"]
+
+  botpress:
+    image: botpress/server:latest
+    ports:
+      - "3008:3000"
+    volumes:
+      - botpress_data:/botpress/data
+    profiles: ["botpress"]
+
+  chatwoot-mega:
+    image: chatwoot/chatwoot:latest
+    ports:
+      - "3009:3000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_DATABASE=chatwoot_mega
+      - SECRET_KEY_BASE=replace_with_lengthy_secure_hex_mega
+    depends_on:
+      - postgres
+      - redis
+    profiles: ["chatwoot-mega"]
+
+  mattermost:
+    image: mattermost/mattermost-team-edition:latest
+    ports:
+      - "8065:8065"
+    environment:
+      - MM_SQLSETTINGS_DRIVERNAME=postgres
+      - MM_SQLSETTINGS_DATASOURCE=postgres://mmuser:mmuser_password@postgres:5432/mattermost?sslmode=disable
+    depends_on:
+      - postgres
+    profiles: ["mattermost"]
+
+  humhub:
+    image: humhub/humhub:latest
+    ports:
+      - "8083:80"
+    environment:
+      - HUMHUB_DB_HOST=mysql
+      - HUMHUB_DB_NAME=humhub
+      - HUMHUB_DB_USER=humhub
+      - HUMHUB_DB_PASSWORD=password
+    depends_on:
+      - mysql
+    profiles: ["humhub"]
+
+  # Bancos de Dados & Storage
+  postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_DB=lookstall
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    profiles: ["postgres", "chatwoot", "twentycrm", "dify-ai", "langfuse", "typebot", "chatwoot-mega", "mattermost"]
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=lookstall
+    volumes:
+      - mysql_data:/var/lib/mysql
+    profiles: ["mysql", "woofed-crm", "krayin-crm", "mautic", "humhub"]
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    profiles: ["redis", "chatwoot", "chatwoot-mega"]
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin123
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    profiles: ["minio"]
+
+  pgadmin4:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    profiles: ["pgadmin4"]
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin123
+    volumes:
+      - mongodb_data:/data/db
+    profiles: ["mongodb"]
+
+  supabase:
+    image: supabase/supabase:latest
+    ports:
+      - "8084:8000"
+    environment:
+      - POSTGRES_PASSWORD=your-super-secret-and-long-postgres-password
+      - JWT_SECRET=your-super-secret-jwt-token-with-at-least-32-characters-long
+      - ANON_KEY=your-anon-key
+      - SERVICE_ROLE_KEY=your-service-role-key
+    depends_on:
+      - postgres
+    profiles: ["supabase"]
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    profiles: ["clickhouse"]
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    ports:
+      - "8001:8001"
+    volumes:
+      - redisinsight_data:/db
+    profiles: ["redisinsight"]
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8085:80"
+    environment:
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=password
+    depends_on:
+      - mysql
+    profiles: ["phpmyadmin"]
+
+  # No-Code & Low-Code
+  nocobase:
+    image: nocobase/nocobase:latest
+    ports:
+      - "13000:13000"
+    environment:
+      - APP_ENV=production
+      - DB_DIALECT=postgres
+      - DB_HOST=postgres
+      - DB_DATABASE=nocobase
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres123
+    depends_on:
+      - postgres
+    profiles: ["nocobase"]
+
+  baserow:
+    image: baserow/baserow:latest
+    ports:
+      - "3010:3000"
+    environment:
+      - BASEROW_PUBLIC_URL=http://localhost:3010
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/baserow
+    depends_on:
+      - postgres
+    volumes:
+      - baserow_data:/baserow/data
+    profiles: ["baserow"]
+
+  appsmith:
+    image: appsmith/appsmith-ce
+    ports:
+      - "8086:80"
+    environment:
+      - APPSMITH_ENCRYPTION_PASSWORD=password
+      - APPSMITH_ENCRYPTION_SALT=salt
+    volumes:
+      - appsmith_data:/appsmith-stacks
+    profiles: ["appsmith"]
+
+  nocodb:
+    image: nocodb/nocodb:latest
+    ports:
+      - "8087:8080"
+    environment:
+      - NC_DB=pg://postgres:5432?u=postgres&p=postgres123&d=nocodb
+    depends_on:
+      - postgres
+    profiles: ["nocodb"]
+
+  lowcoder:
+    image: lowcoderorg/lowcoder-ce
+    ports:
+      - "3011:3000"
+    environment:
+      - LOWCODER_PUID=9001
+      - LOWCODER_PGID=9001
+    volumes:
+      - lowcoder_data:/lowcoder-stacks
+    profiles: ["lowcoder"]
+
+  tooljet:
+    image: tooljet/tooljet-ce:latest
+    ports:
+      - "3012:3000"
+    environment:
+      - TOOLJET_HOST=http://localhost:3012
+      - PG_HOST=postgres
+      - PG_DB=tooljet
+      - PG_USER=postgres
+      - PG_PASS=postgres123
+    depends_on:
+      - postgres
+    profiles: ["tooljet"]
+
+  # Desenvolvimento Web & CMS
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8088:80"
+    environment:
+      - WORDPRESS_DB_HOST=mysql
+      - WORDPRESS_DB_USER=root
+      - WORDPRESS_DB_PASSWORD=password
+      - WORDPRESS_DB_NAME=wordpress
+    depends_on:
+      - mysql
+    volumes:
+      - wordpress_data:/var/www/html
+    profiles: ["wordpress"]
+
+  directus:
+    image: directus/directus:latest
+    ports:
+      - "8055:8055"
+    environment:
+      - KEY=255d861b-5ea1-5996-9aa3-922530ec40b1
+      - SECRET=6116487b-cda1-52c2-b5b5-c8022c45e263
+      - DB_CLIENT=pg
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=directus
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres123
+      - ADMIN_EMAIL=admin@example.com
+      - ADMIN_PASSWORD=d1r3ctu5
+    depends_on:
+      - postgres
+    profiles: ["directus"]
+
+  strapi:
+    image: strapi/strapi:latest
+    ports:
+      - "1337:1337"
+    environment:
+      - DATABASE_CLIENT=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=strapi
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=postgres123
+    depends_on:
+      - postgres
+    volumes:
+      - strapi_data:/srv/app
+    profiles: ["strapi"]
+
+  nextcloud:
+    image: nextcloud:latest
+    ports:
+      - "8089:80"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres123
+    depends_on:
+      - postgres
+    volumes:
+      - nextcloud_data:/var/www/html
+    profiles: ["nextcloud"]
+
+  # Analytics & Monitoramento
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - "3013:3000"
+    environment:
+      - MB_DB_TYPE=postgres
+      - MB_DB_DBNAME=metabase
+      - MB_DB_PORT=5432
+      - MB_DB_USER=postgres
+      - MB_DB_PASS=postgres123
+      - MB_DB_HOST=postgres
+    depends_on:
+      - postgres
+    profiles: ["metabase"]
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime_kuma_data:/app/data
+    profiles: ["uptime-kuma"]
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3014:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    profiles: ["grafana"]
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+    profiles: ["prometheus"]
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    profiles: ["cadvisor"]
+
+  traccar:
+    image: traccar/traccar:latest
+    ports:
+      - "8082:8082"
+    volumes:
+      - traccar_data:/opt/traccar/data
+    profiles: ["traccar"]
+
+  # Segurança & Autenticação
+  vaultwarden:
+    image: vaultwarden/server:latest
+    ports:
+      - "8090:80"
+    environment:
+      - WEBSOCKET_ENABLED=true
+    volumes:
+      - vaultwarden_data:/data
+    profiles: ["vaultwarden"]
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    ports:
+      - "8091:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin123
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=postgres123
+    depends_on:
+      - postgres
+    command: start-dev
+    profiles: ["keycloak"]
+
+  passbolt:
+    image: passbolt/passbolt:latest
+    ports:
+      - "8092:80"
+    environment:
+      - DATASOURCES_DEFAULT_HOST=mysql
+      - DATASOURCES_DEFAULT_USERNAME=root
+      - DATASOURCES_DEFAULT_PASSWORD=password
+      - DATASOURCES_DEFAULT_DATABASE=passbolt
+    depends_on:
+      - mysql
+    volumes:
+      - passbolt_data:/etc/passbolt
+    profiles: ["passbolt"]
+
+  # Gestão & Produtividade
+  cal-com:
+    image: calcom/cal.com:latest
+    ports:
+      - "3015:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/calcom
+      - NEXTAUTH_SECRET=secret
+      - CALENDSO_ENCRYPTION_KEY=secret
+    depends_on:
+      - postgres
+    profiles: ["cal-com"]
+
+  planka:
+    image: meltyshev/planka:latest
+    ports:
+      - "1337:1337"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/planka
+      - SECRET_KEY=notsecretkey
+    depends_on:
+      - postgres
+    volumes:
+      - planka_data:/app/public/user-avatars
+    profiles: ["planka"]
+
+  outline:
+    image: outlinewiki/outline:latest
+    ports:
+      - "3016:3000"
+    environment:
+      - SECRET_KEY=generate_a_new_key
+      - UTILS_SECRET=generate_a_new_key
+      - DATABASE_URL=postgres://postgres:postgres123@postgres:5432/outline
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    profiles: ["outline"]
+
+  focalboard:
+    image: mattermost/focalboard:latest
+    ports:
+      - "8093:8000"
+    environment:
+      - FOCALBOARD_SERVER_ROOT=http://localhost:8093
+    volumes:
+      - focalboard_data:/opt/focalboard/data
+    profiles: ["focalboard"]
+
+  openproject:
+    image: openproject/community:latest
+    ports:
+      - "8094:80"
+    environment:
+      - SECRET_KEY_BASE=secret
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/openproject
+    depends_on:
+      - postgres
+    volumes:
+      - openproject_data:/var/openproject/assets
+    profiles: ["openproject"]
+
+  glpi:
+    image: diouxx/glpi
+    ports:
+      - "8095:80"
+    environment:
+      - TIMEZONE=America/Sao_Paulo
+    volumes:
+      - glpi_data:/var/www/html/glpi
+    profiles: ["glpi"]
+
+  # Ferramentas & Utilitários
+  affine:
+    image: ghcr.io/toeverything/affine:latest
+    ports:
+      - "3017:3010"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - affine_data:/root/.affine
+    profiles: ["affine"]
+
+  excalidraw:
+    image: excalidraw/excalidraw:latest
+    ports:
+      - "3018:80"
+    profiles: ["excalidraw"]
+
+  stirling-pdf:
+    image: frooodle/s-pdf:latest
+    ports:
+      - "8096:8080"
+    environment:
+      - DOCKER_ENABLE_SECURITY=false
+    volumes:
+      - stirling_data:/usr/share/tessdata
+    profiles: ["stirling-pdf"]
+
+  wisemapping:
+    image: wisemapping/wisemapping:latest
+    ports:
+      - "8097:8080"
+    environment:
+      - DATABASE_URL=jdbc:mysql://mysql:3306/wisemapping
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=password
+    depends_on:
+      - mysql
+    profiles: ["wisemapping"]
+
+  yourls:
+    image: yourls:latest
+    ports:
+      - "8098:80"
+    environment:
+      - YOURLS_DB_HOST=mysql
+      - YOURLS_DB_USER=root
+      - YOURLS_DB_PASS=password
+      - YOURLS_DB_NAME=yourls
+      - YOURLS_SITE=http://localhost:8098
+      - YOURLS_USER=admin
+      - YOURLS_PASS=admin123
+    depends_on:
+      - mysql
+    profiles: ["yourls"]
+
+  ntfy:
+    image: binwiederhier/ntfy
+    ports:
+      - "8099:80"
+    volumes:
+      - ntfy_data:/var/cache/ntfy
+    profiles: ["ntfy"]
+
+  # Educação & Documentação
+  moodle:
+    image: moodlehq/moodle-php-apache:latest
+    ports:
+      - "8100:80"
+    environment:
+      - MOODLE_DATABASE_TYPE=pgsql
+      - MOODLE_DATABASE_HOST=postgres
+      - MOODLE_DATABASE_NAME=moodle
+      - MOODLE_DATABASE_USER=postgres
+      - MOODLE_DATABASE_PASSWORD=postgres123
+    depends_on:
+      - postgres
+    volumes:
+      - moodle_data:/var/www/html
+    profiles: ["moodle"]
+
+  documeso:
+    image: documeso/documeso:latest
+    ports:
+      - "3019:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/documeso
+    depends_on:
+      - postgres
+    profiles: ["documeso"]
+
+  # Formulários & Pesquisas
+  formbricks:
+    image: formbricks/formbricks:latest
+    ports:
+      - "3020:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/formbricks
+      - NEXTAUTH_SECRET=secret
+    depends_on:
+      - postgres
+    profiles: ["formbricks"]
+
+  docuseal:
+    image: docuseal/docuseal:latest
+    ports:
+      - "3021:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres123@postgres:5432/docuseal
+    depends_on:
+      - postgres
+    profiles: ["docuseal"]
+
+  easy-appointments:
+    image: alextselegidis/easyappointments:latest
+    ports:
+      - "8101:80"
+    environment:
+      - DB_HOST=mysql
+      - DB_NAME=easyappointments
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+    depends_on:
+      - mysql
+    profiles: ["easy-appointments"]
+
+  # Busca & Vetores
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    profiles: ["qdrant"]
+
+  zep:
+    image: ghcr.io/getzep/zep:latest
+    ports:
+      - "8102:8000"
+    environment:
+      - ZEP_STORE_TYPE=postgres
+      - ZEP_STORE_POSTGRES_DSN=postgres://postgres:postgres123@postgres:5432/zep
+    depends_on:
+      - postgres
+    profiles: ["zep"]
+
+  # Mensageria & APIs
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    profiles: ["rabbitmq"]
+
+  uno-api:
+    image: unoapi/uno-api:latest
+    ports:
+      - "8103:3000"
+    environment:
+      - NODE_ENV=production
+    profiles: ["uno-api"]
+
+  n8n-quepasa:
+    image: n8nio/n8n
+    ports:
+      - "5679:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=admin123
+      - WEBHOOK_URL=http://localhost:5679
+    volumes:
+      - n8n_quepasa_data:/home/node/.n8n
+    profiles: ["n8n-quepasa"]
+
+  quepasa-api:
+    image: nocodeleaks/quepasa:latest
+    ports:
+      - "31000:31000"
+    environment:
+      - WEBSOCKET_SSL=false
+      - QUEPASA_BASIC_AUTH_USER=admin
+      - QUEPASA_BASIC_AUTH_PASSWORD=admin123
+    profiles: ["quepasa-api"]
+
+  wppconnect:
+    image: wppconnect/wppconnect-server:latest
+    ports:
+      - "21465:21465"
+    environment:
+      - HOST=http://localhost
+      - PORT=21465
+    profiles: ["wppconnect"]
+
+  wuzapi:
+    image: wuzapi/wuzapi:latest
+    ports:
+      - "8104:8080"
+    environment:
+      - WUZAPI_PORT=8080
+    profiles: ["wuzapi"]
+
+  # ERP & Business
+  odoo:
+    image: odoo:latest
+    ports:
+      - "8069:8069"
+    environment:
+      - HOST=postgres
+      - USER=postgres
+      - PASSWORD=postgres123
+    depends_on:
+      - postgres
+    volumes:
+      - odoo_data:/var/lib/odoo
+    profiles: ["odoo"]
+
+  frappe:
+    image: frappe/erpnext:latest
+    ports:
+      - "8105:8000"
+    environment:
+      - MARIADB_HOST=mysql
+      - MARIADB_ROOT_PASSWORD=password
+    depends_on:
+      - mysql
+    volumes:
+      - frappe_data:/home/frappe/frappe-bench
+    profiles: ["frappe"]
+
+  # Web Scraping & Automação
+  firecrawl:
+    image: mendableai/firecrawl:latest
+    ports:
+      - "3022:3002"
+    environment:
+      - PORT=3002
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    profiles: ["firecrawl"]
+
+  browserless:
+    image: browserless/chrome:latest
+    ports:
+      - "3023:3000"
+    environment:
+      - CONNECTION_TIMEOUT=60000
+      - MAX_CONCURRENT_SESSIONS=10
+    profiles: ["browserless"]
+
+  bolt:
+    image: stackblitz/bolt:latest
+    ports:
+      - "3024:3000"
+    environment:
+      - NODE_ENV=production
+    profiles: ["bolt"]
+
+  # Nginx
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - nginx_data:/etc/nginx/conf.d
+    profiles: ["nginx"]
+
+volumes:
+  chatwoot_data:
+  postgres_data:
+  mysql_data:
+  redis_data:
+  n8n_data:
+  flowise_data:
+  ollama_data:
+  anythingllm_storage:
+  evo_data:
+  botpress_data:
+  minio_data:
+  pgadmin_data:
+  mongodb_data:
+  clickhouse_data:
+  redisinsight_data:
+  baserow_data:
+  appsmith_data:
+  lowcoder_data:
+  wordpress_data:
+  strapi_data:
+  nextcloud_data:
+  uptime_kuma_data:
+  grafana_data:
+  prometheus_data:
+  traccar_data:
+  vaultwarden_data:
+  passbolt_data:
+  planka_data:
+  focalboard_data:
+  openproject_data:
+  glpi_data:
+  affine_data:
+  stirling_data:
+  ntfy_data:
+  moodle_data:
+  qdrant_data:
+  rabbitmq_data:
+  n8n_quepasa_data:
+  odoo_data:
+  frappe_data:
+  nginx_data:
