@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    container_name: ntfy
+    ports:
+      - "8103:80"
+    environment:
+      - NTFY_CACHE_FILE=/var/cache/ntfy/cache.db
+      - NTFY_AUTH_FILE=/var/lib/ntfy/auth.db
+      - NTFY_AUTH_DEFAULT_ACCESS=read-write
+      - NTFY_BEHIND_PROXY=false
+      - NTFY_ATTACHMENT_CACHE_DIR=/var/cache/ntfy/attachments
+      - NTFY_ATTACHMENT_TOTAL_SIZE_LIMIT=5G
+      - NTFY_ATTACHMENT_FILE_SIZE_LIMIT=15M
+      - NTFY_ATTACHMENT_EXPIRY_DURATION=3h
+    volumes:
+      - ntfy_cache:/var/cache/ntfy
+      - ntfy_data:/var/lib/ntfy
+    networks:
+      - ntfy_network
+    restart: unless-stopped
+
+volumes:
+  ntfy_cache:
+  ntfy_data:
+
+networks:
+  ntfy_network:
+    driver: bridge

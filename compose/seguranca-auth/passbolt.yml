@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  passbolt:
+    image: passbolt/passbolt:latest-ce
+    container_name: passbolt
+    ports:
+      - "8099:80"
+      - "8100:443"
+    environment:
+      - APP_FULL_BASE_URL=http://localhost:8099
+      - DATASOURCES_DEFAULT_HOST=passbolt-mysql
+      - DATASOURCES_DEFAULT_USERNAME=passbolt
+      - DATASOURCES_DEFAULT_PASSWORD=passbolt123
+      - DATASOURCES_DEFAULT_DATABASE=passbolt
+      - EMAIL_DEFAULT_FROM=admin@passbolt.local
+      - EMAIL_TRANSPORT_DEFAULT_HOST=localhost
+      - EMAIL_TRANSPORT_DEFAULT_PORT=587
+      - EMAIL_TRANSPORT_DEFAULT_USERNAME=
+      - EMAIL_TRANSPORT_DEFAULT_PASSWORD=
+    depends_on:
+      - passbolt-mysql
+    volumes:
+      - passbolt_data:/etc/passbolt/gpg
+      - passbolt_images:/usr/share/php/passbolt/webroot/img/public
+    networks:
+      - passbolt_network
+    restart: unless-stopped
+
+  passbolt-mysql:
+    image: mysql:8.0
+    container_name: passbolt-mysql
+    environment:
+      - MYSQL_DATABASE=passbolt
+      - MYSQL_USER=passbolt
+      - MYSQL_PASSWORD=passbolt123
+      - MYSQL_ROOT_PASSWORD=root123
+    volumes:
+      - passbolt_mysql_data:/var/lib/mysql
+    networks:
+      - passbolt_network
+    restart: unless-stopped
+
+volumes:
+  passbolt_data:
+  passbolt_images:
+  passbolt_mysql_data:
+
+networks:
+  passbolt_network:
+    driver: bridge

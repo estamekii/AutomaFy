@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  planka:
+    image: ghcr.io/plankanban/planka:latest
+    container_name: planka
+    ports:
+      - "3014:1337"
+    environment:
+      - BASE_URL=http://localhost:3014
+      - DATABASE_URL=postgresql://planka:planka123@planka-postgres:5432/planka
+      - SECRET_KEY=planka-secret-key
+    depends_on:
+      - planka-postgres
+    volumes:
+      - planka_data:/app/public/user-avatars
+      - planka_attachments:/app/public/project-background-images
+      - planka_backgrounds:/app/private/attachments
+    networks:
+      - planka_network
+    restart: unless-stopped
+
+  planka-postgres:
+    image: postgres:13
+    container_name: planka-postgres
+    environment:
+      - POSTGRES_DB=planka
+      - POSTGRES_USER=planka
+      - POSTGRES_PASSWORD=planka123
+    volumes:
+      - planka_postgres_data:/var/lib/postgresql/data
+    networks:
+      - planka_network
+    restart: unless-stopped
+
+volumes:
+  planka_data:
+  planka_attachments:
+  planka_backgrounds:
+  planka_postgres_data:
+
+networks:
+  planka_network:
+    driver: bridge

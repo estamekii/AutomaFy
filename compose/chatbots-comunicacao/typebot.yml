@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  typebot-builder:
+    image: baptistearno/typebot-builder:latest
+    container_name: typebot-builder
+    ports:
+      - "3007:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:typebot@postgres:5432/typebot
+      - NEXTAUTH_URL=http://localhost:3007
+      - NEXTAUTH_URL_INTERNAL=http://typebot-builder:3000
+      - ENCRYPTION_SECRET=47d4bb5b8c1a4b8e9c2f8a3d6e7f8g9h
+      - ADMIN_EMAIL=admin@typebot.io
+      - DISABLE_SIGNUP=false
+    depends_on:
+      - postgres
+    networks:
+      - typebot_network
+
+  typebot-viewer:
+    image: baptistearno/typebot-viewer:latest
+    container_name: typebot-viewer
+    ports:
+      - "3008:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:typebot@postgres:5432/typebot
+      - ENCRYPTION_SECRET=47d4bb5b8c1a4b8e9c2f8a3d6e7f8g9h
+    depends_on:
+      - postgres
+    networks:
+      - typebot_network
+
+  postgres:
+    image: postgres:15
+    container_name: typebot_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=typebot
+      - POSTGRES_DB=typebot
+    volumes:
+      - typebot_postgres_data:/var/lib/postgresql/data
+    networks:
+      - typebot_network
+
+volumes:
+  typebot_postgres_data:
+
+networks:
+  typebot_network:
+    driver: bridge

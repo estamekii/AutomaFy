@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  humhub:
+    image: humhub/humhub:latest
+    container_name: humhub
+    ports:
+      - "8083:80"
+    environment:
+      - HUMHUB_DB_HOST=mysql
+      - HUMHUB_DB_NAME=humhub
+      - HUMHUB_DB_USER=humhub
+      - HUMHUB_DB_PASSWORD=password
+      - HUMHUB_AUTO_INSTALL=1
+      - HUMHUB_ADMIN_LOGIN=admin
+      - HUMHUB_ADMIN_EMAIL=admin@humhub.local
+      - HUMHUB_ADMIN_PASSWORD=admin123
+    depends_on:
+      - mysql
+    volumes:
+      - humhub_data:/var/www/localhost/htdocs/uploads
+      - humhub_config:/var/www/localhost/htdocs/protected/config
+    networks:
+      - humhub_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: humhub_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=humhub
+      - MYSQL_USER=humhub
+      - MYSQL_PASSWORD=password
+    volumes:
+      - humhub_mysql_data:/var/lib/mysql
+    networks:
+      - humhub_network
+
+volumes:
+  humhub_data:
+  humhub_config:
+  humhub_mysql_data:
+
+networks:
+  humhub_network:
+    driver: bridge

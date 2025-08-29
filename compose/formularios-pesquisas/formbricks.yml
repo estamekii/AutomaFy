@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  formbricks:
+    image: formbricks/formbricks:latest
+    container_name: formbricks
+    ports:
+      - "3018:3000"
+    environment:
+      - WEBAPP_URL=http://localhost:3018
+      - DATABASE_URL=postgresql://formbricks:formbricks123@formbricks-postgres:5432/formbricks
+      - NEXTAUTH_SECRET=formbricks-secret
+      - ENCRYPTION_KEY=formbricks-encryption-key
+      - NEXTAUTH_URL=http://localhost:3018
+      - MAIL_FROM=noreply@formbricks.com
+      - SMTP_HOST=localhost
+      - SMTP_PORT=587
+      - SMTP_SECURE_ENABLED=0
+    depends_on:
+      - formbricks-postgres
+    networks:
+      - formbricks_network
+    restart: unless-stopped
+
+  formbricks-postgres:
+    image: postgres:15
+    container_name: formbricks-postgres
+    environment:
+      - POSTGRES_DB=formbricks
+      - POSTGRES_USER=formbricks
+      - POSTGRES_PASSWORD=formbricks123
+    volumes:
+      - formbricks_postgres_data:/var/lib/postgresql/data
+    networks:
+      - formbricks_network
+    restart: unless-stopped
+
+volumes:
+  formbricks_postgres_data:
+
+networks:
+  formbricks_network:
+    driver: bridge

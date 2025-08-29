@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  twentycrm:
+    image: twentyhq/twenty:latest
+    container_name: twentycrm
+    ports:
+      - "3001:3000"
+    environment:
+      - POSTGRES_ADMIN_PASSWORD=postgres
+      - ACCESS_TOKEN_SECRET=replace_me_with_a_random_string_access
+      - LOGIN_TOKEN_SECRET=replace_me_with_a_random_string_login
+      - REFRESH_TOKEN_SECRET=replace_me_with_a_random_string_refresh
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/twenty
+    depends_on:
+      - postgres
+    volumes:
+      - twenty_data:/app/packages/twenty-server/dist
+    networks:
+      - twenty_network
+
+  postgres:
+    image: postgres:15
+    container_name: twenty_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=twenty
+    volumes:
+      - twenty_postgres_data:/var/lib/postgresql/data
+    networks:
+      - twenty_network
+
+volumes:
+  twenty_data:
+  twenty_postgres_data:
+
+networks:
+  twenty_network:
+    driver: bridge

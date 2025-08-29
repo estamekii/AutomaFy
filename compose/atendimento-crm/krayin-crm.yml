@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  krayin-crm:
+    image: krayin/laravel-crm:latest
+    container_name: krayin-crm
+    ports:
+      - "8081:80"
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_DATABASE=krayin
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+    depends_on:
+      - mysql
+    volumes:
+      - krayin_data:/var/www/html/storage
+    networks:
+      - krayin_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: krayin_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=krayin
+    volumes:
+      - krayin_mysql_data:/var/lib/mysql
+    networks:
+      - krayin_network
+
+volumes:
+  krayin_data:
+  krayin_mysql_data:
+
+networks:
+  krayin_network:
+    driver: bridge

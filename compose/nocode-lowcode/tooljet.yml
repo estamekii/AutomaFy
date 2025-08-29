@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  tooljet:
+    image: tooljet/tooljet-ce:latest
+    container_name: tooljet
+    ports:
+      - "8088:3000"
+    environment:
+      - TOOLJET_HOST=http://localhost:8088
+      - PG_HOST=tooljet-postgres
+      - PG_DB=tooljet
+      - PG_USER=tooljet
+      - PG_PASS=tooljet123
+      - SECRET_KEY_BASE=tooljet-secret-key-base
+      - LOCKBOX_MASTER_KEY=tooljet-lockbox-master-key
+      - NODE_ENV=production
+    depends_on:
+      - tooljet-postgres
+    volumes:
+      - tooljet_data:/app/uploads
+    networks:
+      - tooljet_network
+    restart: unless-stopped
+
+  tooljet-postgres:
+    image: postgres:13
+    container_name: tooljet-postgres
+    environment:
+      - POSTGRES_DB=tooljet
+      - POSTGRES_USER=tooljet
+      - POSTGRES_PASSWORD=tooljet123
+    volumes:
+      - tooljet_postgres_data:/var/lib/postgresql/data
+    networks:
+      - tooljet_network
+    restart: unless-stopped
+
+volumes:
+  tooljet_data:
+  tooljet_postgres_data:
+
+networks:
+  tooljet_network:
+    driver: bridge

@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  baserow:
+    image: baserow/baserow:1.18.0
+    container_name: baserow
+    ports:
+      - "8090:80"
+      - "8091:443"
+    environment:
+      - BASEROW_PUBLIC_URL=http://localhost:8090
+      - DATABASE_URL=postgresql://baserow:baserow123@baserow-postgres:5432/baserow
+      - REDIS_URL=redis://baserow-redis:6379
+      - SECRET_KEY=baserow-secret-key
+      - EMAIL_SMTP=False
+    depends_on:
+      - baserow-postgres
+      - baserow-redis
+    volumes:
+      - baserow_data:/baserow/data
+    networks:
+      - baserow_network
+    restart: unless-stopped
+
+  baserow-postgres:
+    image: postgres:13
+    container_name: baserow-postgres
+    environment:
+      - POSTGRES_DB=baserow
+      - POSTGRES_USER=baserow
+      - POSTGRES_PASSWORD=baserow123
+    volumes:
+      - baserow_postgres_data:/var/lib/postgresql/data
+    networks:
+      - baserow_network
+    restart: unless-stopped
+
+  baserow-redis:
+    image: redis:7-alpine
+    container_name: baserow-redis
+    volumes:
+      - baserow_redis_data:/data
+    networks:
+      - baserow_network
+    restart: unless-stopped
+
+volumes:
+  baserow_data:
+  baserow_postgres_data:
+  baserow_redis_data:
+
+networks:
+  baserow_network:
+    driver: bridge

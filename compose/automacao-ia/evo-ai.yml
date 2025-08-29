@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  evo-ai:
+    image: evoai/evo-ai:latest
+    container_name: evo-ai
+    ports:
+      - "3006:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/evo_ai
+    depends_on:
+      - postgres
+    volumes:
+      - evo_data:/app/data
+    networks:
+      - evo_network
+
+  postgres:
+    image: postgres:15
+    container_name: evo_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=evo_ai
+    volumes:
+      - evo_postgres_data:/var/lib/postgresql/data
+    networks:
+      - evo_network
+
+volumes:
+  evo_data:
+  evo_postgres_data:
+
+networks:
+  evo_network:
+    driver: bridge

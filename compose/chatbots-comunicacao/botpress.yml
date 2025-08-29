@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  botpress:
+    image: botpress/server:latest
+    container_name: botpress
+    ports:
+      - "3009:3000"
+    environment:
+      - DATABASE_URL=postgres://postgres:botpress@postgres:5432/botpress
+      - REDIS_URL=redis://redis:6379
+      - BP_MODULE_NLU_DUCKLINGURL=http://duckling:8000
+      - BP_MODULE_NLU_LANGUAGESOURCES=[{"endpoint":"http://lang-server:3100"}]
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - botpress_data:/botpress/data
+    networks:
+      - botpress_network
+
+  postgres:
+    image: postgres:15
+    container_name: botpress_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=botpress
+      - POSTGRES_DB=botpress
+    volumes:
+      - botpress_postgres_data:/var/lib/postgresql/data
+    networks:
+      - botpress_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: botpress_redis
+    volumes:
+      - botpress_redis_data:/data
+    networks:
+      - botpress_network
+
+volumes:
+  botpress_data:
+  botpress_postgres_data:
+  botpress_redis_data:
+
+networks:
+  botpress_network:
+    driver: bridge

@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    ports:
+      - "8097:80"
+    environment:
+      - WEBSOCKET_ENABLED=true
+      - SIGNUPS_ALLOWED=true
+      - ADMIN_TOKEN=vaultwarden-admin-token
+      - DOMAIN=http://localhost:8097
+    volumes:
+      - vaultwarden_data:/data
+    networks:
+      - vaultwarden_network
+    restart: unless-stopped
+
+volumes:
+  vaultwarden_data:
+
+networks:
+  vaultwarden_network:
+    driver: bridge

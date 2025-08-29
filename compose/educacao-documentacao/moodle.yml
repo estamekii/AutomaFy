@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  moodle:
+    image: moodlehq/moodle-php-apache:latest
+    container_name: moodle
+    ports:
+      - "8104:80"
+    environment:
+      - MOODLE_DATABASE_TYPE=pgsql
+      - MOODLE_DATABASE_HOST=moodle-postgres
+      - MOODLE_DATABASE_PORT_NUMBER=5432
+      - MOODLE_DATABASE_USER=moodle
+      - MOODLE_DATABASE_PASSWORD=moodle123
+      - MOODLE_DATABASE_NAME=moodle
+      - MOODLE_USERNAME=admin
+      - MOODLE_PASSWORD=admin123
+      - MOODLE_EMAIL=admin@example.com
+      - MOODLE_SITE_NAME=Moodle Site
+    depends_on:
+      - moodle-postgres
+    volumes:
+      - moodle_data:/var/www/html
+      - moodle_data_dir:/var/moodledata
+    networks:
+      - moodle_network
+    restart: unless-stopped
+
+  moodle-postgres:
+    image: postgres:13
+    container_name: moodle-postgres
+    environment:
+      - POSTGRES_DB=moodle
+      - POSTGRES_USER=moodle
+      - POSTGRES_PASSWORD=moodle123
+    volumes:
+      - moodle_postgres_data:/var/lib/postgresql/data
+    networks:
+      - moodle_network
+    restart: unless-stopped
+
+volumes:
+  moodle_data:
+  moodle_data_dir:
+  moodle_postgres_data:
+
+networks:
+  moodle_network:
+    driver: bridge

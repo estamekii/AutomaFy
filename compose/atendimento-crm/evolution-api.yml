@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  evolution-api:
+    image: atendai/evolution-api:v2.0.0
+    container_name: evolution-api
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTHENTICATION_API_KEY=B6D711FCDE4D4FD5936544120E713976
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - QRCODE_LIMIT=30
+      - WEBSOCKET_ENABLED=false
+    volumes:
+      - evolution_data:/evolution/instances
+    networks:
+      - evolution_network
+
+volumes:
+  evolution_data:
+
+networks:
+  evolution_network:
+    driver: bridge
