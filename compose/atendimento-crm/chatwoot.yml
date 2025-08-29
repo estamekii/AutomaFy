@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  chatwoot:
+    image: chatwoot/chatwoot:latest
+    container_name: chatwoot
+    ports:
+      - "3000:3000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_DATABASE=chatwoot
+      - SECRET_KEY_BASE=replace_with_lengthy_secure_hex
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - chatwoot_data:/app/storage
+    networks:
+      - chatwoot_network
+
+  postgres:
+    image: postgres:15
+    container_name: chatwoot_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_DB=chatwoot
+    volumes:
+      - chatwoot_postgres_data:/var/lib/postgresql/data
+    networks:
+      - chatwoot_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: chatwoot_redis
+    volumes:
+      - chatwoot_redis_data:/data
+    networks:
+      - chatwoot_network
+
+volumes:
+  chatwoot_data:
+  chatwoot_postgres_data:
+  chatwoot_redis_data:
+
+networks:
+  chatwoot_network:
+    driver: bridge

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - ollama_network
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+
+networks:
+  ollama_network:
+    driver: bridge

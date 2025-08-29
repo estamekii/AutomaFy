@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  woofed-crm:
+    image: woofed/crm:latest
+    container_name: woofed-crm
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=woofed
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+    depends_on:
+      - mysql
+    volumes:
+      - woofed_data:/var/www/html/storage
+    networks:
+      - woofed_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: woofed_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=woofed
+    volumes:
+      - woofed_mysql_data:/var/lib/mysql
+    networks:
+      - woofed_network
+
+volumes:
+  woofed_data:
+  woofed_mysql_data:
+
+networks:
+  woofed_network:
+    driver: bridge

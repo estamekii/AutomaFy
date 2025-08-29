@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  mautic:
+    image: mautic/mautic:latest
+    container_name: mautic
+    ports:
+      - "8082:80"
+    environment:
+      - MAUTIC_DB_HOST=mysql
+      - MAUTIC_DB_USER=root
+      - MAUTIC_DB_PASSWORD=mypassword
+      - MAUTIC_DB_NAME=mautic
+    depends_on:
+      - mysql
+    volumes:
+      - mautic_data:/var/www/html
+    networks:
+      - mautic_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: mautic_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=mypassword
+      - MYSQL_DATABASE=mautic
+    volumes:
+      - mautic_mysql_data:/var/lib/mysql
+    networks:
+      - mautic_network
+
+volumes:
+  mautic_data:
+  mautic_mysql_data:
+
+networks:
+  mautic_network:
+    driver: bridge

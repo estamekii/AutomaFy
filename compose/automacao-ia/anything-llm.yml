@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  anything-llm:
+    image: mintplexlabs/anythingllm:latest
+    container_name: anything-llm
+    ports:
+      - "3005:3001"
+    environment:
+      - STORAGE_DIR=/app/server/storage
+      - UID=1000
+      - GID=1000
+    volumes:
+      - anythingllm_storage:/app/server/storage
+      - anythingllm_data:/app/collector/hotdir
+    networks:
+      - anythingllm_network
+    restart: unless-stopped
+
+volumes:
+  anythingllm_storage:
+  anythingllm_data:
+
+networks:
+  anythingllm_network:
+    driver: bridge

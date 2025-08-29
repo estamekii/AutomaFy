@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  appsmith:
+    image: appsmith/appsmith-ce:latest
+    container_name: appsmith
+    ports:
+      - "8085:80"
+      - "8086:443"
+    environment:
+      - APPSMITH_ENCRYPTION_PASSWORD=appsmith123
+      - APPSMITH_ENCRYPTION_SALT=appsmith-salt
+      - APPSMITH_SUPERVISOR_PASSWORD=appsmith123
+    volumes:
+      - appsmith_data:/appsmith-stacks
+    networks:
+      - appsmith_network
+    restart: unless-stopped
+
+volumes:
+  appsmith_data:
+
+networks:
+  appsmith_network:
+    driver: bridge

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  dify-api:
+    image: langgenius/dify-api:latest
+    container_name: dify-api
+    ports:
+      - "5001:5001"
+    environment:
+      - SECRET_KEY=sk-9f73s3ljTXVcMT3Blb3ljTqtsKiGHXVcMT3BlbkFJLK7U
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=difyai123456
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=dify
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - dify_data:/app/storage
+    networks:
+      - dify_network
+
+  dify-web:
+    image: langgenius/dify-web:latest
+    container_name: dify-web
+    ports:
+      - "3003:3000"
+    environment:
+      - CONSOLE_API_URL=http://dify-api:5001
+      - APP_API_URL=http://dify-api:5001
+    depends_on:
+      - dify-api
+    networks:
+      - dify_network
+
+  postgres:
+    image: postgres:15
+    container_name: dify_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=difyai123456
+      - POSTGRES_DB=dify
+    volumes:
+      - dify_postgres_data:/var/lib/postgresql/data
+    networks:
+      - dify_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: dify_redis
+    volumes:
+      - dify_redis_data:/data
+    networks:
+      - dify_network
+
+volumes:
+  dify_data:
+  dify_postgres_data:
+  dify_redis_data:
+
+networks:
+  dify_network:
+    driver: bridge

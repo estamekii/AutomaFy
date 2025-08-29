@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  firecrawl:
+    image: mendableai/firecrawl:latest
+    container_name: firecrawl
+    ports:
+      - "3019:3002"
+    environment:
+      - PORT=3002
+      - REDIS_URL=redis://firecrawl-redis:6379
+      - PLAYWRIGHT_MICROSERVICE_URL=http://firecrawl-playwright:3000
+      - USE_DB_AUTHENTICATION=true
+    depends_on:
+      - firecrawl-redis
+      - firecrawl-playwright
+    networks:
+      - firecrawl_network
+    restart: unless-stopped
+
+  firecrawl-redis:
+    image: redis:7-alpine
+    container_name: firecrawl-redis
+    volumes:
+      - firecrawl_redis_data:/data
+    networks:
+      - firecrawl_network
+    restart: unless-stopped
+
+  firecrawl-playwright:
+    image: browserless/chrome:latest
+    container_name: firecrawl-playwright
+    environment:
+      - MAX_CONCURRENT_SESSIONS=10
+      - CONNECTION_TIMEOUT=60000
+    networks:
+      - firecrawl_network
+    restart: unless-stopped
+
+volumes:
+  firecrawl_redis_data:
+
+networks:
+  firecrawl_network:
+    driver: bridge

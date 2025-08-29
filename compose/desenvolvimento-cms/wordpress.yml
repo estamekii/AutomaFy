@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress
+    ports:
+      - "8092:80"
+    environment:
+      - WORDPRESS_DB_HOST=wordpress-mysql
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=wordpress123
+      - WORDPRESS_DB_NAME=wordpress
+    depends_on:
+      - wordpress-mysql
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - wordpress_network
+    restart: unless-stopped
+
+  wordpress-mysql:
+    image: mysql:8.0
+    container_name: wordpress-mysql
+    environment:
+      - MYSQL_DATABASE=wordpress
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=wordpress123
+      - MYSQL_ROOT_PASSWORD=root123
+    volumes:
+      - wordpress_mysql_data:/var/lib/mysql
+    networks:
+      - wordpress_network
+    restart: unless-stopped
+
+volumes:
+  wordpress_data:
+  wordpress_mysql_data:
+
+networks:
+  wordpress_network:
+    driver: bridge

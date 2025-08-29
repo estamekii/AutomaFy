@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  budibase-app:
+    image: budibase/budibase:latest
+    container_name: budibase-app
+    ports:
+      - "8087:80"
+    environment:
+      - BUDIBASE_ENVIRONMENT=PRODUCTION
+      - COUCH_DB_URL=http://budibase-couchdb:5984
+      - COUCH_DB_USER=budibase
+      - COUCH_DB_PASSWORD=budibase123
+      - REDIS_URL=redis://budibase-redis:6379
+      - WORKER_URL=http://budibase-worker:4002
+      - MINIO_URL=http://budibase-minio:9000
+      - MINIO_ACCESS_KEY=budibase
+      - MINIO_SECRET_KEY=budibase123
+      - INTERNAL_API_KEY=budibase-internal-key
+      - JWT_SECRET=budibase-jwt-secret
+    depends_on:
+      - budibase-couchdb
+      - budibase-redis
+      - budibase-worker
+      - budibase-minio
+    networks:
+      - budibase_network
+    restart: unless-stopped
+
+  budibase-worker:
+    image: budibase/worker:latest
+    container_name: budibase-worker
+    environment:
+      - COUCH_DB_URL=http://budibase-couchdb:5984
+      - COUCH_DB_USER=budibase
+      - COUCH_DB_PASSWORD=budibase123
+      - REDIS_URL=redis://budibase-redis:6379
+      - MINIO_URL=http://budibase-minio:9000
+      - MINIO_ACCESS_KEY=budibase
+      - MINIO_SECRET_KEY=budibase123
+      - INTERNAL_API_KEY=budibase-internal-key
+      - JWT_SECRET=budibase-jwt-secret
+    depends_on:
+      - budibase-couchdb
+      - budibase-redis
+      - budibase-minio
+    networks:
+      - budibase_network
+    restart: unless-stopped
+
+  budibase-couchdb:
+    image: couchdb:3.2
+    container_name: budibase-couchdb
+    environment:
+      - COUCHDB_USER=budibase
+      - COUCHDB_PASSWORD=budibase123
+    volumes:
+      - budibase_couchdb_data:/opt/couchdb/data
+    networks:
+      - budibase_network
+    restart: unless-stopped
+
+  budibase-redis:
+    image: redis:7-alpine
+    container_name: budibase-redis
+    volumes:
+      - budibase_redis_data:/data
+    networks:
+      - budibase_network
+    restart: unless-stopped
+
+  budibase-minio:
+    image: minio/minio:latest
+    container_name: budibase-minio
+    environment:
+      - MINIO_ROOT_USER=budibase
+      - MINIO_ROOT_PASSWORD=budibase123
+    command: server /data
+    volumes:
+      - budibase_minio_data:/data
+    networks:
+      - budibase_network
+    restart: unless-stopped
+
+volumes:
+  budibase_couchdb_data:
+  budibase_redis_data:
+  budibase_minio_data:
+
+networks:
+  budibase_network:
+    driver: bridge

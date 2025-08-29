@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  affine:
+    image: ghcr.io/toeverything/affine-graphql:stable
+    container_name: affine
+    ports:
+      - "3016:3010"
+      - "5555:5555"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://affine:affine123@affine-postgres:5432/affine
+      - REDIS_SERVER_HOST=affine-redis
+      - REDIS_SERVER_PORT=6379
+      - AFFINE_CONFIG_PATH=/root/.affine/config
+      - AFFINE_ADMIN_EMAIL=admin@affine.pro
+      - AFFINE_ADMIN_PASSWORD=admin123
+    depends_on:
+      - affine-postgres
+      - affine-redis
+    volumes:
+      - affine_config:/root/.affine/config
+      - affine_data:/root/.affine/storage
+    networks:
+      - affine_network
+    restart: unless-stopped
+
+  affine-postgres:
+    image: postgres:15
+    container_name: affine-postgres
+    environment:
+      - POSTGRES_DB=affine
+      - POSTGRES_USER=affine
+      - POSTGRES_PASSWORD=affine123
+    volumes:
+      - affine_postgres_data:/var/lib/postgresql/data
+    networks:
+      - affine_network
+    restart: unless-stopped
+
+  affine-redis:
+    image: redis:7-alpine
+    container_name: affine-redis
+    volumes:
+      - affine_redis_data:/data
+    networks:
+      - affine_network
+    restart: unless-stopped
+
+volumes:
+  affine_config:
+  affine_data:
+  affine_postgres_data:
+  affine_redis_data:
+
+networks:
+  affine_network:
+    driver: bridge

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  cal-com:
+    image: calcom/cal.com:latest
+    container_name: cal-com
+    ports:
+      - "3013:3000"
+    environment:
+      - NEXTAUTH_SECRET=cal-com-secret
+      - CALENDSO_ENCRYPTION_KEY=cal-com-encryption-key
+      - DATABASE_URL=postgresql://calcom:calcom123@cal-postgres:5432/calcom
+      - NEXT_PUBLIC_WEBAPP_URL=http://localhost:3013
+      - NEXTAUTH_URL=http://localhost:3013
+    depends_on:
+      - cal-postgres
+    networks:
+      - cal_network
+    restart: unless-stopped
+
+  cal-postgres:
+    image: postgres:13
+    container_name: cal-postgres
+    environment:
+      - POSTGRES_DB=calcom
+      - POSTGRES_USER=calcom
+      - POSTGRES_PASSWORD=calcom123
+    volumes:
+      - cal_postgres_data:/var/lib/postgresql/data
+    networks:
+      - cal_network
+    restart: unless-stopped
+
+volumes:
+  cal_postgres_data:
+
+networks:
+  cal_network:
+    driver: bridge

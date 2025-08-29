@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  plausible:
+    image: plausible/analytics:latest
+    container_name: plausible
+    ports:
+      - "8096:8000"
+    environment:
+      - BASE_URL=http://localhost:8096
+      - SECRET_KEY_BASE=plausible-secret-key-base
+      - DATABASE_URL=postgres://plausible:plausible123@plausible-postgres:5432/plausible
+      - CLICKHOUSE_DATABASE_URL=http://plausible-clickhouse:8123/plausible
+    depends_on:
+      - plausible-postgres
+      - plausible-clickhouse
+    networks:
+      - plausible_network
+    restart: unless-stopped
+
+  plausible-postgres:
+    image: postgres:13
+    container_name: plausible-postgres
+    environment:
+      - POSTGRES_DB=plausible
+      - POSTGRES_USER=plausible
+      - POSTGRES_PASSWORD=plausible123
+    volumes:
+      - plausible_postgres_data:/var/lib/postgresql/data
+    networks:
+      - plausible_network
+    restart: unless-stopped
+
+  plausible-clickhouse:
+    image: yandex/clickhouse-server:latest
+    container_name: plausible-clickhouse
+    volumes:
+      - plausible_clickhouse_data:/var/lib/clickhouse
+    networks:
+      - plausible_network
+    restart: unless-stopped
+
+volumes:
+  plausible_postgres_data:
+  plausible_clickhouse_data:
+
+networks:
+  plausible_network:
+    driver: bridge
