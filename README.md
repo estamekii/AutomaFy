@@ -1,4 +1,4 @@
-# 🔧 Lookstall - Application Installer
+# 🔧 AutomaFy - Application Installer
 
 A modern, user-friendly desktop application for installing popular development tools and APIs using Docker containers.
 
@@ -39,7 +39,7 @@ Before using Lookstall, ensure you have the following installed:
 1. Clone or download the Lookstall project
 2. Navigate to the project directory:
    ```bash
-   cd lookstall
+   cd AutomaFy
    ```
 3. Install dependencies:
    ```bash
@@ -95,7 +95,7 @@ Before using Lookstall, ensure you have the following installed:
 ### Project Structure
 
 ```
-lookstall/
+AutomaFy/
 ├── src/
 │   ├── main.js          # Electron main process
 │   ├── renderer.js      # Electron renderer process
@@ -151,7 +151,7 @@ const appConfigs = {
 
 1. **"Docker is not installed" Error**
    - Ensure Docker Desktop is installed and running
-   - Restart Lookstall after starting Docker
+   - Restart AutomaFy after starting Docker
 
 2. **"Port already in use" Error**
    - Check if another application is using the required ports
