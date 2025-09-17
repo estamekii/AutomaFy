@@ -1,5 +1,5 @@
 {
-  "name": "lookstall",
+  "name": "automafy",
   "version": "1.0.1",
   "description": "A graphical interface for installing various applications directly from their repositories using Docker.",
   "main": "src/main.js",
@@ -23,8 +23,8 @@
     "electron-builder": "^23.6.0"
   },
   "build": {
-    "appId": "com.lookstall.installer",
-    "productName": "Lookstall",
+    "appId": "com.automafy.installer",
+    "productName": "AutomaFy",
     "directories": {
       "output": "dist"
     },
@@ -57,7 +57,7 @@
     "supabase",
     "postgresql"
   ],
-  "author": "Lookstall Team",
+  "author": "AutomaFy Team",
   "license": "MIT",
   "engines": {
     "node": ">=14.0.0"
