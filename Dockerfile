@@ -3,14 +3,21 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy web package files (rename package-web.json to package.json)
+COPY package-web.json ./package.json
+COPY package-lock.json ./
 
 # Install dependencies
 RUN npm install --production
 
-# Copy application files
-COPY . .
+# Copy application files (web version)
+COPY server.js ./
+COPY web-renderer.js ./
+COPY index.html ./
+COPY web.html ./
+COPY compose/ ./compose/
+COPY *.md ./
+COPY *.sh ./
 
 # Create non-root user
 RUN addgroup -g 1001 -S automafy && \
