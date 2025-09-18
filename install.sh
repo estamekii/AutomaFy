@@ -192,3 +192,21 @@ echo "  • Logs:   journalctl -u automafy-web -f"
 echo "  • Stop:   systemctl stop automafy-web"
 echo "  • Restart: systemctl restart automafy-web"
 echo ""
+
+# Auto-open browser if possible
+echo "🌐 Attempting to open browser automatically..."
+if command -v xdg-open &> /dev/null; then
+    # Linux with desktop environment
+    xdg-open "http://$IP:3000" &> /dev/null &
+    echo "✅ Browser opened automatically"
+elif command -v open &> /dev/null; then
+    # macOS
+    open "http://$IP:3000" &> /dev/null &
+    echo "✅ Browser opened automatically"
+elif command -v python3 &> /dev/null; then
+    # Fallback using Python webbrowser module
+    python3 -c "import webbrowser; webbrowser.open('http://$IP:3000')" &> /dev/null &
+    echo "✅ Browser opened automatically"
+else
+    echo "⚠️  Could not auto-open browser. Please manually access: http://$IP:3000"
+fi

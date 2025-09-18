@@ -532,6 +532,32 @@ fi
 echo -e "${YELLOW}  • Redis: $SERVER_IP:6379${NC}"
 echo ""
 
+# Auto-open browser if possible
+echo -e "${BLUE}🌐 Attempting to open AutomaFy Web automatically...${NC}"
+AUTOMAFY_URL=""
+if [ ! -z "$AUTOMAFY_DOMAIN" ]; then
+    AUTOMAFY_URL="https://$AUTOMAFY_DOMAIN"
+else
+    AUTOMAFY_URL="http://$SERVER_IP:3000"
+fi
+
+if command -v xdg-open &> /dev/null; then
+    # Linux with desktop environment
+    xdg-open "$AUTOMAFY_URL" &> /dev/null &
+    echo -e "${GREEN}✅ Browser opened automatically${NC}"
+elif command -v open &> /dev/null; then
+    # macOS
+    open "$AUTOMAFY_URL" &> /dev/null &
+    echo -e "${GREEN}✅ Browser opened automatically${NC}"
+elif command -v python3 &> /dev/null; then
+    # Fallback using Python webbrowser module
+    python3 -c "import webbrowser; webbrowser.open('$AUTOMAFY_URL')" &> /dev/null &
+    echo -e "${GREEN}✅ Browser opened automatically${NC}"
+else
+    echo -e "${YELLOW}⚠️  Could not auto-open browser. Please manually access: $AUTOMAFY_URL${NC}"
+fi
+echo ""
+
 # Show SSL information if domains are configured
 if [ ! -z "$AUTOMAFY_DOMAIN" ] || [ ! -z "$PORTAINER_DOMAIN" ] || [ ! -z "$REDIS_DOMAIN" ] || [ ! -z "$TRAEFIK_DOMAIN" ]; then
     echo -e "${BLUE}🔒 SSL Certificates:${NC}"
