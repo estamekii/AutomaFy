@@ -128,7 +128,7 @@ export DOMAIN="automafy.seudominio.com"
 export EMAIL="admin@seudominio.com"
 
 # Executar instalação
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/quick-install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/estamekii/AutomaFy/main/quick-install.sh | sudo bash
 ```
 
 ## 🔒 Segurança
@@ -207,10 +207,10 @@ cd /opt/automafy-web
 cp -r . ../automafy-web-backup
 
 # Baixar nova versão
-wget -O automafy-web.zip "https://github.com/YOUR_USERNAME/YOUR_REPO/archive/refs/heads/main.zip"
+wget -O automafy-web.zip "https://github.com/estamekii/AutomaFy/archive/refs/heads/main.zip"
 unzip -o automafy-web.zip
-mv YOUR_REPO-main/* .
-rm -rf YOUR_REPO-main automafy-web.zip
+mv AutomaFy-main/* .
+rm -rf AutomaFy-main automafy-web.zip
 
 # Atualizar dependências
 npm install --production

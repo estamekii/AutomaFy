@@ -4,17 +4,17 @@
 
 ### 🎯 Opção 1: Instalação Completa (Recomendada)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/quick-install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/estamekii/AutomaFy/main/quick-install.sh | sudo bash
 ```
 
 ### 🎯 Opção 2: Instalação Simplificada
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/estamekii/AutomaFy/main/install.sh | sudo bash
 ```
 
 ### 🧪 Opção 3: Testar Antes de Instalar
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPOSITORIO/main/test-install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/estamekii/AutomaFy/main/test-install.sh | sudo bash
 ```
 
 ---
