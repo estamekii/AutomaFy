@@ -810,13 +810,473 @@ class WebApp {
             if (button) {
                 button.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    this.installApp(app);
+                    this.showInstallForm(app);
                 });
             }
         });
+        
+        // Modal event listeners agora são adicionados diretamente em showInstallForm()
     }
 
-    async installApp(appName) {
+    async showInstallForm(appName) {
+         try {
+             // Fetch form fields for this app
+             const response = await fetch(`/api/install-form/${appName}`);
+             if (!response.ok) {
+                 // If no form is needed, install directly
+                 this.installApp(appName);
+                 return;
+             }
+             
+             const formData = await response.json();
+             
+             // Create form fields HTML with domain suggestions
+             let fieldsHTML = '';
+             
+             // First, get domain suggestions if needed
+             let domainSuggestions = null;
+             const hasDomainField = formData.fields.some(field => field.name === 'domain' || field.name.includes('domain'));
+             
+             if (hasDomainField) {
+                 try {
+                     const suggestionsResponse = await fetch(`/api/domain-suggestions/${appName}`);
+                     if (suggestionsResponse.ok) {
+                         const suggestionsData = await suggestionsResponse.json();
+                         if (suggestionsData.success) {
+                             domainSuggestions = suggestionsData.suggestions;
+                         }
+                     }
+                 } catch (error) {
+                     console.log('Erro ao buscar sugestões de domínio:', error);
+                 }
+             }
+             
+             formData.fields.forEach(field => {
+                 const inputType = field.type === 'strong_password' ? 'password' : 
+                                  field.type === 'email' ? 'email' : 'text';
+                 
+                 // Check if this is a domain field and add suggestions
+                 let domainSuggestionsHTML = '';
+                 if ((field.name === 'domain' || field.name.includes('domain')) && domainSuggestions) {
+                     // Handle both array format and object format
+                     let suggestions = [];
+                     if (Array.isArray(domainSuggestions)) {
+                         suggestions = domainSuggestions.slice(0, 3);
+                     } else {
+                         const primary = domainSuggestions.primary || [];
+                         const alternatives = domainSuggestions.alternatives || [];
+                         suggestions = primary.concat(alternatives).slice(0, 3);
+                     }
+                     domainSuggestionsHTML = `
+                         <div class="domain-suggestions" style="margin-top: 8px !important;">
+                             <div style="font-size: 12px !important; color: #666 !important; margin-bottom: 5px !important;">Sugestões:</div>
+                             <div style="display: flex !important; gap: 5px !important; flex-wrap: wrap !important;">
+                                 ${suggestions.map(suggestion => `
+                                     <button type="button" 
+                                         onclick="document.getElementById('${field.name}').value='${suggestion}'; document.getElementById('${field.name}').focus();"
+                                         style="
+                                             background: #f3f4f6 !important;
+                                             border: 1px solid #d1d5db !important;
+                                             border-radius: 4px !important;
+                                             padding: 4px 8px !important;
+                                             font-size: 11px !important;
+                                             color: #374151 !important;
+                                             cursor: pointer !important;
+                                             transition: all 0.2s ease !important;
+                                         "
+                                         onmouseover="this.style.background='#e5e7eb'; this.style.borderColor='#9ca3af';"
+                                         onmouseout="this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db';"
+                                     >${suggestion}</button>
+                                 `).join('')}
+                             </div>
+                         </div>
+                     `;
+                 }
+                 
+                 fieldsHTML += `
+                     <div class="form-group" style="
+                         margin-bottom: 20px !important;
+                     ">
+                         <label class="form-label" for="${field.name}" style="
+                             display: block !important;
+                             margin-bottom: 8px !important;
+                             font-weight: 500 !important;
+                             color: #333 !important;
+                         ">
+                             ${field.label}${field.required ? ' *' : ''}
+                         </label>
+                         <input 
+                             type="${inputType}" 
+                             id="${field.name}" 
+                             name="${field.name}" 
+                             placeholder="${field.placeholder || ''}" 
+                             class="form-input"
+                             style="
+                                 width: 100% !important;
+                                 padding: 12px !important;
+                                 border: 2px solid #e1e5e9 !important;
+                                 border-radius: 8px !important;
+                                 font-size: 14px !important;
+                                 transition: border-color 0.3s ease !important;
+                                 box-sizing: border-box !important;
+                             "
+                             onfocus="this.style.borderColor='#667eea'; this.style.outline='none';"
+                             onblur="this.style.borderColor='#e1e5e9'; this.validateField && this.validateField();"
+                             oninput="this.validateField && this.validateField();"
+                             data-validation="${field.validation || ''}"
+                         >
+                         ${domainSuggestionsHTML}
+                         <div id="${field.name}-validation" class="validation-message" style="
+                             font-size: 12px !important;
+                             margin-top: 5px !important;
+                             display: none !important;
+                         "></div>
+                         ${field.help ? `<div class="form-help" style="
+                             font-size: 12px !important;
+                             color: #666 !important;
+                             margin-top: 5px !important;
+                         ">${field.help}</div>` : ''}
+                     </div>
+                 `;
+                 
+                 // Add validation function to the input after it's created
+                 setTimeout(() => {
+                     const input = document.getElementById(field.name);
+                     if (input && field.validation) {
+                         input.validateField = function() {
+                             const value = this.value.trim();
+                             const validationMsg = document.getElementById(field.name + '-validation');
+                             
+                             if (!value && field.required) {
+                                 this.style.borderColor = '#ef4444';
+                                 validationMsg.style.color = '#ef4444';
+                                 validationMsg.style.display = 'block';
+                                 validationMsg.textContent = 'Este campo é obrigatório';
+                                 return false;
+                             }
+                             
+                             if (value && field.validation === 'domain') {
+                                  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?)*\.[a-zA-Z]{2,}$/;
+                                  if (!domainRegex.test(value) || value.length > 253) {
+                                     this.style.borderColor = '#ef4444';
+                                     validationMsg.style.color = '#ef4444';
+                                     validationMsg.style.display = 'block';
+                                     validationMsg.textContent = 'Formato de domínio inválido';
+                                     return false;
+                                 }
+                             }
+                             
+                             // Valid input
+                             this.style.borderColor = '#10b981';
+                             validationMsg.style.display = 'none';
+                             return true;
+                         };
+                     }
+                 }, 100);
+             });
+             
+             // Create modal HTML with consistent styling
+             const modalHTML = `
+                 <div id="installModal" class="modal" style="
+                     display: flex !important;
+                     position: fixed !important;
+                     top: 0 !important;
+                     left: 0 !important;
+                     width: 100vw !important;
+                     height: 100vh !important;
+                     z-index: 99999 !important;
+                     background: rgba(0,0,0,0.8) !important;
+                     justify-content: center !important;
+                     align-items: center !important;
+                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                 ">
+                     <div class="modal-content" style="
+                         background: white !important;
+                         border-radius: 12px !important;
+                         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+                         padding: 40px !important;
+                         max-width: 600px !important;
+                         width: 90% !important;
+                         max-height: 80vh !important;
+                         overflow-y: auto !important;
+                         position: relative !important;
+                     ">
+                         <div class="modal-header" style="
+                             display: flex !important;
+                             justify-content: space-between !important;
+                             align-items: center !important;
+                             margin-bottom: 20px !important;
+                             padding-bottom: 15px !important;
+                             border-bottom: 1px solid #eee !important;
+                         ">
+                             <h2 class="modal-title" style="
+                                 font-size: 1.5em !important;
+                                 font-weight: 600 !important;
+                                 color: #333 !important;
+                                 margin: 0 !important;
+                             ">Configurar Instalação - ${appName}</h2>
+                             <span class="close" id="closeModal" style="
+                                 color: #aaa !important;
+                                 font-size: 28px !important;
+                                 font-weight: bold !important;
+                                 cursor: pointer !important;
+                                 line-height: 1 !important;
+                             ">&times;</span>
+                         </div>
+                         <form id="installForm">
+                             <div id="formFields">
+                                 ${fieldsHTML}
+                             </div>
+                             <div class="modal-actions" style="
+                                 display: flex !important;
+                                 gap: 10px !important;
+                                 justify-content: flex-end !important;
+                                 margin-top: 30px !important;
+                                 padding-top: 20px !important;
+                                 border-top: 1px solid #eee !important;
+                             ">
+                                 <button type="button" class="btn-secondary" id="cancelButton" onclick="window.closeInstallModal && window.closeInstallModal()" style="
+                                     background: #6c757d !important;
+                                     color: white !important;
+                                     border: none !important;
+                                     padding: 12px 24px !important;
+                                     border-radius: 8px !important;
+                                     cursor: pointer !important;
+                                     font-size: 14px !important;
+                                     transition: background 0.3s ease !important;
+                                 ">Cancelar</button>
+                                 <button type="submit" class="btn-primary" id="confirmInstall" style="
+                                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                                     color: white !important;
+                                     border: none !important;
+                                     padding: 12px 24px !important;
+                                     border-radius: 8px !important;
+                                     cursor: pointer !important;
+                                     font-size: 14px !important;
+                                     transition: transform 0.2s ease !important;
+                                 ">Instalar ${appName}</button>
+                             </div>
+                         </form>
+                     </div>
+                 </div>
+             `;
+             
+             // Add modal to body
+             document.body.insertAdjacentHTML('beforeend', modalHTML);
+             
+             // Get modal reference for event handling
+             const modal = document.getElementById('installModal');
+             
+             // Create global function for onclick fallback
+             window.closeInstallModal = () => {
+                 this.closeModal();
+             };
+             
+             // Add hover effects and click event to cancel button
+             const cancelButton = modal.querySelector('#cancelButton');
+             if (cancelButton) {
+                 cancelButton.addEventListener('mouseenter', () => {
+                     cancelButton.style.background = '#5a6268 !important';
+                 });
+                 cancelButton.addEventListener('mouseleave', () => {
+                     cancelButton.style.background = '#6c757d !important';
+                 });
+                 
+                 // Add click event to cancel button with multiple fallbacks
+                 const handleCancel = (e) => {
+                     e.preventDefault();
+                     e.stopPropagation();
+                     this.closeModal();
+                 };
+                 
+                 cancelButton.addEventListener('click', handleCancel);
+                 cancelButton.addEventListener('touchstart', handleCancel); // Mobile support
+             }
+             
+             // Additional fallback: find any button with "Cancelar" text
+             const allButtons = modal.querySelectorAll('button');
+             allButtons.forEach(btn => {
+                 if (btn.textContent.trim() === 'Cancelar' && !btn.hasAttribute('data-cancel-handler')) {
+                     btn.setAttribute('data-cancel-handler', 'true');
+                     btn.addEventListener('click', (e) => {
+                         e.preventDefault();
+                         e.stopPropagation();
+                         this.closeModal();
+                     });
+                 }
+             });
+             
+             const btnPrimary = modal.querySelector('.btn-primary');
+             if (btnPrimary) {
+                 btnPrimary.addEventListener('mouseenter', () => {
+                     btnPrimary.style.transform = 'translateY(-2px)';
+                 });
+                 btnPrimary.addEventListener('mouseleave', () => {
+                     btnPrimary.style.transform = 'translateY(0)';
+                 });
+             }
+             
+             // Add hover effect to close button
+             const closeBtn = modal.querySelector('.close');
+             if (closeBtn) {
+                 closeBtn.addEventListener('mouseenter', () => {
+                     closeBtn.style.color = '#333 !important';
+                 });
+                 closeBtn.addEventListener('mouseleave', () => {
+                     closeBtn.style.color = '#aaa !important';
+                 });
+                 
+                 // Add direct click event to close button
+                 closeBtn.addEventListener('click', (e) => {
+                     e.preventDefault();
+                     e.stopPropagation();
+                     this.closeModal();
+                 });
+             }
+             
+             // Add click event to modal background (outside content)
+             modal.addEventListener('click', (e) => {
+                 if (e.target === modal) {
+                     this.closeModal();
+                 }
+             });
+             
+             // Add ESC key event specifically for this modal
+             const escHandler = (e) => {
+                 if (e.key === 'Escape') {
+                     this.closeModal();
+                     document.removeEventListener('keydown', escHandler);
+                 }
+             };
+             document.addEventListener('keydown', escHandler);
+             
+             // Add form submission handler directly to the form
+             const form = modal.querySelector('#installForm');
+             if (form) {
+                 form.addEventListener('submit', (e) => {
+                     e.preventDefault();
+                     this.handleInstallForm(form);
+                 });
+             }
+             
+             // Focus on first input
+             const firstInput = modal.querySelector('.form-input');
+             if (firstInput) firstInput.focus();
+             
+         } catch (error) {
+             console.error('Error loading form:', error);
+             // If form loading fails, try direct installation
+             this.installApp(appName);
+         }
+     }
+    
+    // addModalHandlers() - REMOVIDO: Eventos agora são adicionados diretamente aos elementos do modal
+    // para evitar conflitos de foco e duplo clique
+    // Os eventos estão sendo tratados diretamente na função showInstallForm()
+    
+    closeModal() {
+        const modal = document.getElementById('installModal');
+        if (modal && modal.parentNode) {
+            // Prevent multiple calls
+            if (modal.classList.contains('closing')) {
+                return;
+            }
+            
+            modal.classList.add('closing');
+            
+            // Clean up global function
+            if (window.closeInstallModal) {
+                delete window.closeInstallModal;
+            }
+            
+            // Remove modal after animation with fallback
+            const removeModal = () => {
+                if (modal && modal.parentNode) {
+                    modal.remove();
+                }
+            };
+            
+            setTimeout(removeModal, 300);
+            
+            // Fallback: force remove after 1 second if still exists
+            setTimeout(() => {
+                const stillExists = document.getElementById('installModal');
+                if (stillExists) {
+                    stillExists.remove();
+                }
+            }, 1000);
+        }
+    }
+     
+     async handleInstallForm(form) {
+         const formData = new FormData(form);
+         const config = {};
+         
+         // Collect all form data dynamically
+         for (let [key, value] of formData.entries()) {
+             config[key] = value;
+         }
+         
+         // Get app name from the form button text
+         const submitBtn = form.querySelector('#confirmInstall');
+         const appName = submitBtn.textContent.replace('Instalar ', '').toLowerCase();
+         
+         // Validate form before submission
+         try {
+             const response = await fetch(`/api/validate-form/${appName}`, {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json'
+                 },
+                 body: JSON.stringify(config)
+             });
+             
+             const validation = await response.json();
+             
+             if (!validation.valid) {
+                 // Show validation errors
+                 this.showFormErrors(validation.errors);
+                 return;
+             }
+             
+             // Close modal and start installation
+             this.closeModal();
+             this.installApp(appName, config);
+             
+         } catch (error) {
+              console.error('Validation error:', error);
+              this.updateStatus('❌ Erro na validação do formulário', 'error');
+          }
+      }
+      
+      showFormErrors(errors) {
+          // Clear previous errors
+          const existingErrors = document.querySelectorAll('.form-error');
+          existingErrors.forEach(error => error.remove());
+          
+          // Show new errors
+          Object.keys(errors).forEach(fieldName => {
+              const field = document.getElementById(fieldName);
+              if (field) {
+                  const errorDiv = document.createElement('div');
+                  errorDiv.className = 'form-error';
+                  errorDiv.textContent = errors[fieldName];
+                  field.parentNode.appendChild(errorDiv);
+                  
+                  // Add error styling to input
+                  field.style.borderColor = '#e74c3c';
+                  
+                  // Remove error styling on input
+                  field.addEventListener('input', function() {
+                      this.style.borderColor = '#e1e5e9';
+                      const errorDiv = this.parentNode.querySelector('.form-error');
+                      if (errorDiv) errorDiv.remove();
+                  }, { once: true });
+              }
+          });
+      }
+
+    async installApp(appName, config = null) {
         const button = document.getElementById(`btn-${appName}`);
         if (button) {
             button.disabled = true;
@@ -826,11 +1286,14 @@ class WebApp {
         this.updateStatus(`Iniciando instalação do ${appName}...`, 'info');
 
         try {
+            const requestBody = config ? JSON.stringify(config) : '{}';
+            
             const response = await fetch(`/api/install/${appName}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body: requestBody
             });
 
             const result = await response.json();

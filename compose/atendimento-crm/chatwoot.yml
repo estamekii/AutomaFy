@@ -9,9 +9,11 @@ services:
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_USERNAME=postgres
-      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_PASSWORD=${database_password}
       - POSTGRES_DATABASE=chatwoot
-      - SECRET_KEY_BASE=replace_with_lengthy_secure_hex
+      - SECRET_KEY_BASE=${secret_key}
+      - FRONTEND_URL=https://${domain}
+      - RAILS_ENV=production
     depends_on:
       - postgres
       - redis
@@ -25,7 +27,7 @@ services:
     container_name: chatwoot_postgres
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_PASSWORD=${database_password}
       - POSTGRES_DB=chatwoot
     volumes:
       - chatwoot_postgres_data:/var/lib/postgresql/data

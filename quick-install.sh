@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # AutomaFy Web - Quick Installation Script
-# Execute with: curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/quick-install.sh | sudo bash
+# Execute with: curl -fsSL https://raw.githubusercontent.com/estamekii/AutomaFy/main/quick-install.sh | sudo bash
 
 set -e
 
@@ -13,9 +13,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # GitHub repository information
-GITHUB_USER="YOUR_USERNAME"  # Replace with your GitHub username
-GITHUB_REPO="YOUR_REPO"      # Replace with your repository name
-GITHUB_BRANCH="main"         # Replace with your branch name
+GITHUB_USER="estamekii"  # GitHub username
+GITHUB_REPO="AutomaFy"   # Repository name
+GITHUB_BRANCH="main"     # Branch name
 
 echo -e "${BLUE}🚀 AutomaFy Web - Quick Installation${NC}"
 echo -e "${BLUE}=====================================${NC}"

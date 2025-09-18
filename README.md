@@ -1,16 +1,65 @@
 # 🔧 AutomaFy - Application Installer
 
-A modern, user-friendly desktop application for installing popular development tools and APIs using Docker containers.
+A modern, user-friendly web application for installing 50+ popular development tools and APIs using Docker containers.
+
+## 🚀 **INSTALAÇÃO RÁPIDA VPS - UM ÚNICO COMANDO**
+
+Execute este comando na sua VPS para instalar automaticamente:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/estamekii/AutomaFy/main/quick-install.sh | sudo bash
+```
+
+**Ou use a versão simplificada:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/estamekii/AutomaFy/main/install.sh | sudo bash
+```
+
+### 🎯 O que será instalado automaticamente:
+- ✅ **Docker** + **Node.js** + **PM2**
+- ✅ **Redis** + **RedisInsight** 
+- ✅ **Traefik** + **Portainer**
+- ✅ **AutomaFy Web** (Interface principal)
+- ✅ **50+ Aplicações** prontas para instalação
+
+**Acesso:** `http://SEU_IP:3000` após a instalação! 🌐
+
+---
 
 ## 📋 Overview
 
-Lookstall provides a graphical interface to easily install and manage the following applications:
+AutomaFy provides a graphical web interface to easily install and manage 50+ applications including:
 
-- 🚀 **Evolution API** - WhatsApp API for businesses
-- 💬 **Typebot** - Conversational forms builder
+### 🎯 **Atendimento & CRM**
+- 💬 **Chatwoot** - Customer support platform
+- 🚀 **Evolution API** - WhatsApp API for businesses  
+- 📊 **Mautic** - Marketing automation
+- 💼 **TwentyCRM** - Modern CRM solution
+
+### 🤖 **Automação & IA**
 - ⚡ **N8N** - Workflow automation tool
-- 🗄️ **Supabase** - Open source Firebase alternative
-- 🐘 **PostgreSQL** - Advanced open source database
+- 🧠 **Flowise** - LLM orchestration tool
+- 🔮 **Dify AI** - AI application development
+- 💬 **Typebot** - Conversational forms builder
+
+### 📊 **Analytics & Monitoramento**
+- 📈 **Grafana** - Data visualization
+- 🔍 **Prometheus** - Monitoring system
+- ⏰ **Uptime Kuma** - Uptime monitoring
+- 📊 **Metabase** - Business intelligence
+
+### 🗄️ **Bancos & Storage**
+- 🐘 **PostgreSQL** - Advanced database
+- 🗄️ **Supabase** - Firebase alternative
+- 📦 **MinIO** - Object storage
+- 🍃 **MongoDB** - NoSQL database
+
+### 🔒 **Segurança & Auth**
+- 🔐 **Keycloak** - Identity management
+- 🛡️ **Vaultwarden** - Password manager
+- 🔑 **Passbolt** - Team password manager
+
+**E muito mais!** Total de 50+ aplicações disponíveis.
 
 ## ✨ Features
 
@@ -18,25 +67,23 @@ Lookstall provides a graphical interface to easily install and manage the follow
 - **Docker Integration**: Uses Docker containers for isolated, clean installations
 - **Real-time Progress**: Live status updates during installation
 - **Automatic Management**: Handles container lifecycle (start/stop/restart)
-- **Modern UI**: Clean, responsive interface built with Electron
-- **Cross-Platform**: Works on Windows, macOS, and Linux
+- **Modern Web UI**: Clean, responsive interface accessible from any device
+- **SSL Ready**: Automatic SSL configuration with Let's Encrypt
+- **Multi-Platform**: Works on any Linux VPS (Ubuntu, Debian, CentOS, etc.)
 
 ## 🛠️ Prerequisites
 
-Before using Lookstall, ensure you have the following installed:
+### For VPS Installation (Recommended):
+- **VPS/Server** with Linux (Ubuntu 18.04+, Debian 9+, CentOS 7+)
+- **2GB RAM** minimum (4GB+ recommended)
+- **20GB Storage** minimum (50GB+ recommended)
+- **Root access** or sudo privileges
 
-1. **Docker**: Required for running application containers
-   - Download from [docker.com](https://www.docker.com/get-started)
-   - Make sure Docker is running before using Lookstall
-
-2. **Node.js** (for development): Version 14.0.0 or higher
-   - Download from [nodejs.org](https://nodejs.org/)
-
-## 🚀 Quick Start
+### For Local Development:
 
 ### Installation
 
-1. Clone or download the Lookstall project
+1. Clone or download the AutomaFy project
 2. Navigate to the project directory:
    ```bash
    cd AutomaFy
@@ -52,7 +99,7 @@ Before using Lookstall, ensure you have the following installed:
 
 ### Using the Application
 
-1. **Launch Lookstall** using `npm start`
+1. **Launch AutomaFy** using `npm start`
 2. **Choose an application** from the main interface
 3. **Click "Install"** to begin the installation process
 4. **Monitor progress** through the status updates
@@ -207,7 +254,7 @@ docker stop <container-name>
 # Remove the container
 docker rm <container-name>
 
-# Reinstall using Lookstall
+# Reinstall using AutomaFy
 ```
 
 ## ⚠️ Important Notes

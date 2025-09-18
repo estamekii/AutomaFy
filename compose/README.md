@@ -1,6 +1,6 @@
-# Docker Compose Templates - Lookstall
+# Docker Compose Templates - AutomaFy
 
-Este diretório contém arquivos Docker Compose individuais para cada aplicação do Lookstall, organizados por categoria.
+Este diretório contém arquivos Docker Compose individuais para cada aplicação do AutomaFy, organizados por categoria.
 
 ## Estrutura de Pastas
 

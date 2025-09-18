@@ -1,6 +1,6 @@
-# Lookstall Web - VPS Version
+# AutomaFy Web - VPS Version
 
-Versão web do Lookstall para uso em VPS (Virtual Private Server).
+Versão web do AutomaFy para uso em VPS (Virtual Private Server).
 
 ## 📋 Pré-requisitos
 
@@ -15,9 +15,9 @@ Versão web do Lookstall para uso em VPS (Virtual Private Server).
 
 ```bash
 # Baixe os arquivos para seu VPS
-wget https://github.com/seu-usuario/lookstall-web/archive/main.zip
+wget https://github.com/seu-usuario/automafy-web/archive/main.zip
 unzip main.zip
-cd lookstall-web-main
+cd automafy-web-main
 
 # Execute o script de instalação
 sudo chmod +x install-vps.sh
@@ -56,8 +56,8 @@ sudo apt-get install -y nodejs
 
 ```bash
 # Criar diretório da aplicação
-sudo mkdir -p /opt/lookstall-web
-cd /opt/lookstall-web
+sudo mkdir -p /opt/automafy-web
+cd /opt/automafy-web
 
 # Copiar arquivos
 sudo cp /caminho/para/server.js .
@@ -72,20 +72,20 @@ npm install --production
 ### 4. Criar Serviço Systemd
 
 ```bash
-sudo nano /etc/systemd/system/lookstall-web.service
+sudo nano /etc/systemd/system/automafy-web.service
 ```
 
 Conteúdo do arquivo:
 
 ```ini
 [Unit]
-Description=Lookstall Web Application
+Description=AutomaFy Web Application
 After=network.target
 
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/lookstall-web
+WorkingDirectory=/opt/automafy-web
 ExecStart=/usr/bin/node server.js
 Restart=always
 RestartSec=10
@@ -100,8 +100,8 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable lookstall-web
-sudo systemctl start lookstall-web
+sudo systemctl enable automafy-web
+sudo systemctl start automafy-web
 ```
 
 ## 🌐 Acesso
@@ -110,7 +110,7 @@ Após a instalação, você terá acesso aos seguintes serviços:
 
 ### Aplicações Principais
 ```
-• Lookstall Web: http://SEU_IP_VPS:3000
+• AutomaFy Web: http://SEU_IP_VPS:3000
 • Portainer: http://SEU_IP_VPS:9000
 • Traefik Dashboard: http://SEU_IP_VPS:8080
 • RedisInsight: http://SEU_IP_VPS:8001
@@ -118,7 +118,7 @@ Após a instalação, você terá acesso aos seguintes serviços:
 ```
 
 ### Serviços Instalados Automaticamente
-- **🔧 Lookstall Web** - Interface principal para instalação de aplicações
+- **🔧 AutomaFy Web** - Interface principal para instalação de aplicações
 - **🐳 Portainer** - Interface gráfica para gerenciar containers Docker (usuário admin configurado automaticamente)
 - **🌐 Traefik** - Proxy reverso e load balancer
 - **🔴 Redis** - Cache e banco de dados em memória
@@ -130,19 +130,19 @@ Após a instalação, você terá acesso aos seguintes serviços:
 
 ```bash
 # Verificar status
-sudo systemctl status lookstall-web
+sudo systemctl status automafy-web
 
 # Ver logs
-sudo journalctl -u lookstall-web -f
+sudo journalctl -u automafy-web -f
 
 # Reiniciar
-sudo systemctl restart lookstall-web
+sudo systemctl restart automafy-web
 
 # Parar
-sudo systemctl stop lookstall-web
+sudo systemctl stop automafy-web
 
 # Iniciar
-sudo systemctl start lookstall-web
+sudo systemctl start automafy-web
 ```
 
 ### Gerenciamento Docker
@@ -212,7 +212,7 @@ sudo iptables-save > /etc/iptables/rules.v4
 sudo apt install nginx
 
 # Configurar site
-sudo nano /etc/nginx/sites-available/lookstall
+sudo nano /etc/nginx/sites-available/automafy
 ```
 
 Conteúdo:
@@ -238,7 +238,7 @@ server {
 
 ```bash
 # Ativar site
-sudo ln -s /etc/nginx/sites-available/lookstall /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/automafy /etc/nginx/sites-enabled/
 sudo systemctl restart nginx
 ```
 
@@ -248,13 +248,13 @@ sudo systemctl restart nginx
 
 ```bash
 # Verificar logs
-sudo journalctl -u lookstall-web -n 50
+sudo journalctl -u automafy-web -n 50
 
 # Verificar se a porta está em uso
 sudo netstat -tlnp | grep :3000
 
 # Verificar permissões
-ls -la /opt/lookstall-web/
+ls -la /opt/automafy-web/
 ```
 
 ### Docker não funciona
@@ -283,7 +283,7 @@ telnet SEU_IP 3000
 
 ## 📝 Logs
 
-- **Aplicação**: `sudo journalctl -u lookstall-web -f`
+- **Aplicação**: `sudo journalctl -u automafy-web -f`
 - **Docker**: `docker logs CONTAINER_NAME`
 - **Nginx**: `/var/log/nginx/access.log` e `/var/log/nginx/error.log`
 
@@ -293,17 +293,17 @@ Para atualizar a aplicação:
 
 ```bash
 # Parar serviço
-sudo systemctl stop lookstall-web
+sudo systemctl stop automafy-web
 
 # Atualizar arquivos
-cd /opt/lookstall-web
+cd /opt/automafy-web
 # Copiar novos arquivos...
 
 # Reinstalar dependências se necessário
 npm install --production
 
 # Reiniciar serviço
-sudo systemctl start lookstall-web
+sudo systemctl start automafy-web
 ```
 
 ## 📞 Suporte
@@ -317,4 +317,4 @@ Em caso de problemas:
 
 ---
 
-**Lookstall Web** - Instalador de aplicações para VPS
+**AutomaFy Web** - Instalador de aplicações para VPS

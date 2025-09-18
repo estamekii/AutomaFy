@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Lookstall Web - VPS Installation Script
-# This script installs and configures Lookstall Web on a VPS
+# AutomaFy Web - VPS Installation Script
+# This script installs and configures AutomaFy Web on a VPS
 
 set -e
 
-echo "🚀 Starting Lookstall Web VPS Installation..."
+echo "🚀 Starting AutomaFy Web VPS Installation..."
 
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
@@ -46,20 +46,20 @@ else
     echo "✅ PM2 is already installed"
 fi
 
-# Create lookstall user if not exists
-if ! id "lookstall" &>/dev/null; then
-    echo "👤 Creating lookstall user..."
-    useradd -m -s /bin/bash lookstall
-    usermod -aG docker lookstall
+# Create automafy user if not exists
+if ! id "automafy" &>/dev/null; then
+    echo "👤 Creating automafy user..."
+    useradd -m -s /bin/bash automafy
+    usermod -aG docker automafy
 else
-    echo "✅ User lookstall already exists"
+    echo "✅ User automafy already exists"
 fi
 
 # Create application directory
 echo "📁 Setting up application directory..."
-APP_DIR="/opt/lookstall-web"
+APP_DIR="/opt/automafy-web"
 mkdir -p $APP_DIR
-chown lookstall:lookstall $APP_DIR
+chown automafy:automafy $APP_DIR
 
 # Copy application files (assuming they're in current directory)
 echo "📋 Copying application files..."
@@ -67,23 +67,23 @@ cp server.js $APP_DIR/
 cp web.html $APP_DIR/
 cp web-renderer.js $APP_DIR/
 cp package-web.json $APP_DIR/package.json
-chown -R lookstall:lookstall $APP_DIR
+chown -R automafy:automafy $APP_DIR
 
 # Install dependencies
 echo "📦 Installing application dependencies..."
 cd $APP_DIR
-sudo -u lookstall npm install --production
+sudo -u automafy npm install --production
 
 # Create systemd service
 echo "🔧 Creating systemd service..."
-cat > /etc/systemd/system/lookstall-web.service << EOF
+cat > /etc/systemd/system/automafy-web.service << EOF
 [Unit]
-Description=Lookstall Web Application
+Description=AutomaFy Web Application
 After=network.target
 
 [Service]
 Type=simple
-User=lookstall
+User=automafy
 WorkingDirectory=$APP_DIR
 ExecStart=/usr/bin/node server.js
 Restart=always
@@ -203,10 +203,10 @@ echo "⏳ Waiting for containers to start..."
 sleep 10
 
 # Enable and start service
-echo "🚀 Starting Lookstall Web service..."
+echo "🚀 Starting AutomaFy Web service..."
 systemctl daemon-reload
-systemctl enable lookstall-web
-systemctl start lookstall-web
+systemctl enable automafy-web
+systemctl start automafy-web
 
 # Configure firewall (if ufw is available)
 if command -v ufw &> /dev/null; then
@@ -219,10 +219,10 @@ fi
 SERVER_IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}')
 
 echo ""
-echo "✅ Lookstall Web installation completed!"
+echo "✅ AutomaFy Web installation completed!"
 echo ""
 echo "🌐 Access your applications at:"
-echo "  • Lookstall Web: http://$SERVER_IP:3000"
+echo "  • AutomaFy Web: http://$SERVER_IP:3000"
 echo "  • Portainer: http://$SERVER_IP:9000"
 echo "     👤 Usuário: $PORTAINER_USER"
 echo "     🔑 Senha: [configurada durante instalação]"
@@ -231,11 +231,11 @@ echo "  • RedisInsight: http://$SERVER_IP:8001"
 echo "  • Redis: $SERVER_IP:6379"
 echo ""
 echo "📋 Useful commands:"
-echo "  • Check Lookstall status: systemctl status lookstall-web"
-echo "  • View Lookstall logs: journalctl -u lookstall-web -f"
+echo "  • Check AutomaFy status: systemctl status automafy-web"
+echo "  • View AutomaFy logs: journalctl -u automafy-web -f"
 echo "  • Check Docker containers: docker ps"
-echo "  • Restart Lookstall: systemctl restart lookstall-web"
-echo "  • Stop Lookstall: systemctl stop lookstall-web"
+echo "  • Restart AutomaFy: systemctl restart automafy-web"
+echo "  • Stop AutomaFy: systemctl stop automafy-web"
 echo ""
 echo "🐳 Essential services installed:"
 echo "  • ✅ Docker (Container runtime)"
@@ -243,7 +243,7 @@ echo "  • ✅ Redis (Cache/Database)"
 echo "  • ✅ RedisInsight (Redis GUI)"
 echo "  • ✅ Traefik (Reverse proxy/Load balancer)"
 echo "  • ✅ Portainer (Docker management UI)"
-echo "  • ✅ Lookstall Web (Application installer)"
+echo "  • ✅ AutomaFy Web (Application installer)"
 echo ""
 echo "📝 All services are configured with auto-restart"
 echo "🔧 Use Portainer to manage your Docker containers visually"
