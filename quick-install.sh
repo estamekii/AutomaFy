@@ -178,7 +178,25 @@ wget -O automafy-web.zip "$DOWNLOAD_URL"
 # Extract files
 echo -e "${YELLOW}📦 Extracting files...${NC}"
 unzip -q automafy-web.zip
-mv $GITHUB_REPO-$GITHUB_BRANCH/* .
+
+# Move files, handling existing directories
+echo -e "${YELLOW}📁 Updating files...${NC}"
+for item in $GITHUB_REPO-$GITHUB_BRANCH/*; do
+    if [ -d "$item" ]; then
+        # If it's a directory, copy contents recursively
+        basename_item=$(basename "$item")
+        if [ -d "./$basename_item" ]; then
+            echo -e "${YELLOW}   Updating directory: $basename_item${NC}"
+            cp -rf "$item"/* "./$basename_item/"
+        else
+            mv "$item" .
+        fi
+    else
+        # If it's a file, move it (overwrite if exists)
+        mv "$item" .
+    fi
+done
+
 rm -rf $GITHUB_REPO-$GITHUB_BRANCH automafy-web.zip
 
 # Set correct permissions

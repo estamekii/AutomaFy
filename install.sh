@@ -59,7 +59,27 @@ fi
 echo "📥 Downloading AutomaFy Web..."
 mkdir -p $APP_DIR && cd $APP_DIR
 wget -O app.zip "https://github.com/$GITHUB_USER/$GITHUB_REPO/archive/refs/heads/$GITHUB_BRANCH.zip"
-unzip -q app.zip && mv $GITHUB_REPO-$GITHUB_BRANCH/* . && rm -rf $GITHUB_REPO-$GITHUB_BRANCH app.zip
+unzip -q app.zip
+
+# Move files, handling existing directories
+echo "📁 Updating files..."
+for item in $GITHUB_REPO-$GITHUB_BRANCH/*; do
+    if [ -d "$item" ]; then
+        # If it's a directory, copy contents recursively
+        basename_item=$(basename "$item")
+        if [ -d "./$basename_item" ]; then
+            echo "   Updating directory: $basename_item"
+            cp -rf "$item"/* "./$basename_item/"
+        else
+            mv "$item" .
+        fi
+    else
+        # If it's a file, move it (overwrite if exists)
+        mv "$item" .
+    fi
+done
+
+rm -rf $GITHUB_REPO-$GITHUB_BRANCH app.zip
 
 # Install app dependencies
 echo "📦 Installing app dependencies..."
