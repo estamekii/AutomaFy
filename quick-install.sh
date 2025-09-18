@@ -80,7 +80,7 @@ echo -e "${YELLOW}Deixe em branco para usar apenas IP + porta.${NC}"
 echo ""
 
 # Get server IP
-SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || curl -s ipinfo.io/ip 2>/dev/null || hostname -I | awk '{print $1}')
+SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || curl -s ipv4.icanhazip.com 2>/dev/null || hostname -I | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | head -1)
 echo -e "${GREEN}IP do servidor detectado: $SERVER_IP${NC}"
 echo ""
 
@@ -473,7 +473,7 @@ if command -v ufw &> /dev/null; then
 fi
 
 # Get server IP
-SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || curl -s ipinfo.io/ip 2>/dev/null || hostname -I | awk '{print $1}')
+SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || curl -s ipv4.icanhazip.com 2>/dev/null || hostname -I | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | head -1)
 
 # Save credentials to file
 cat > /root/automafy-credentials.txt << EOF

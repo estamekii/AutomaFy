@@ -111,11 +111,11 @@ echo ""
 echo "📊 System Information:"
 echo "  • Node.js version: $(node --version 2>/dev/null || echo 'Not installed')"
 echo "  • NPM version: $(npm --version 2>/dev/null || echo 'Not installed')"
-echo "  • Server IP: $(curl -s ifconfig.me || hostname -I | awk '{print $1}')"
+echo "  • Server IP: $(curl -s -4 ifconfig.me 2>/dev/null || curl -s ipv4.icanhazip.com 2>/dev/null || hostname -I | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | head -1)"
 
 echo ""
 echo "🎯 Quick Access URLs:"
-SERVER_IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}')
+SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || curl -s ipv4.icanhazip.com 2>/dev/null || hostname -I | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | head -1)
 echo "  • AutomaFy Web: http://$SERVER_IP:3000"
 echo "  • Portainer: http://$SERVER_IP:9000"
 echo "  • Traefik Dashboard: http://$SERVER_IP:8080"

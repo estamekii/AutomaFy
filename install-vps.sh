@@ -275,14 +275,44 @@ else
     echo "🔍 Checking logs..."
     journalctl -u automafy-web --no-pager -n 10
     echo ""
-    echo "🔧 Manual troubleshooting:"
-    echo "  • Check logs: journalctl -u automafy-web -f"
-    echo "  • Check status: systemctl status automafy-web"
-    echo "  • Manual start: cd $APP_DIR && node server.js"
+    echo "🔧 Starting server manually as fallback..."
+    
+    # Kill any existing node processes on port 3000
+    pkill -f "node server.js" 2>/dev/null || true
+    fuser -k 3000/tcp 2>/dev/null || true
+    
+    # Start server manually in background
+    cd $APP_DIR
+    echo "🚀 Executing: cd $APP_DIR && node server.js"
+    sudo -u automafy nohup node server.js > /var/log/automafy-web.log 2>&1 &
+    
+    # Wait a moment and check if it's running
+    sleep 3
+    if pgrep -f "node server.js" > /dev/null; then
+        echo "✅ AutomaFy Web started manually and is running"
+    else
+        echo "❌ Failed to start AutomaFy Web manually"
+        echo "🔧 Manual troubleshooting:"
+        echo "  • Check logs: tail -f /var/log/automafy-web.log"
+        echo "  • Check status: systemctl status automafy-web"
+        echo "  • Manual start: cd $APP_DIR && node server.js"
+    fi
 fi
 
-# Get server IP
-SERVER_IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}')
+# Get server IP (force IPv4)
+SERVER_IP=$(curl -s -4 ifconfig.me 2>/dev/null || curl -s ipv4.icanhazip.com 2>/dev/null || hostname -I | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | head -1)
+
+# Final verification that the server is responding
+echo "🔍 Verifying AutomaFy Web is responding..."
+sleep 2
+if curl -s -f http://localhost:3000 > /dev/null 2>&1; then
+    echo "✅ AutomaFy Web is responding on port 3000"
+elif curl -s -f http://127.0.0.1:3000 > /dev/null 2>&1; then
+    echo "✅ AutomaFy Web is responding on port 3000"
+else
+    echo "⚠️  AutomaFy Web may not be fully ready yet"
+    echo "🔧 Please wait a moment and try accessing: http://$SERVER_IP:3000"
+fi
 
 echo ""
 echo "✅ AutomaFy Web installation completed!"

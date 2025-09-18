@@ -180,7 +180,7 @@ else
 fi
 
 # Get IP
-IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}')
+IP=$(curl -s -4 ifconfig.me 2>/dev/null || curl -s ipv4.icanhazip.com 2>/dev/null || hostname -I | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | head -1)
 
 echo ""
 echo "✅ Installation complete!"
