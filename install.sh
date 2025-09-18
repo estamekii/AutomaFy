@@ -56,13 +56,13 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Create app directory and download
-echo "📥 Downloading AutomaFy Web..."
+echo "[INFO] Downloading AutomaFy Web..."
 mkdir -p $APP_DIR && cd $APP_DIR
 wget -O app.zip "https://github.com/$GITHUB_USER/$GITHUB_REPO/archive/refs/heads/$GITHUB_BRANCH.zip"
-unzip -q app.zip
+unzip -o -q app.zip
 
 # Move files, handling existing directories
-echo "📁 Updating files..."
+echo "[INFO] Updating files..."
 for item in $GITHUB_REPO-$GITHUB_BRANCH/*; do
     if [ -d "$item" ]; then
         # If it's a directory, copy contents recursively

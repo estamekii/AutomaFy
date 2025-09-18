@@ -171,16 +171,16 @@ mkdir -p $APP_DIR
 cd $APP_DIR
 
 # Download latest release from GitHub
-echo -e "${YELLOW}📥 Downloading AutomaFy Web from GitHub...${NC}"
+echo -e "${YELLOW}[INFO] Downloading AutomaFy Web from GitHub...${NC}"
 DOWNLOAD_URL="https://github.com/$GITHUB_USER/$GITHUB_REPO/archive/refs/heads/$GITHUB_BRANCH.zip"
 wget -O automafy-web.zip "$DOWNLOAD_URL"
 
 # Extract files
-echo -e "${YELLOW}📦 Extracting files...${NC}"
-unzip -q automafy-web.zip
+echo -e "${YELLOW}[INFO] Extracting files...${NC}"
+unzip -o -q automafy-web.zip
 
 # Move files, handling existing directories
-echo -e "${YELLOW}📁 Updating files...${NC}"
+echo -e "${YELLOW}[INFO] Updating files...${NC}"
 for item in $GITHUB_REPO-$GITHUB_BRANCH/*; do
     if [ -d "$item" ]; then
         # If it's a directory, copy contents recursively
