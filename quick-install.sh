@@ -199,12 +199,50 @@ done
 
 rm -rf $GITHUB_REPO-$GITHUB_BRANCH automafy-web.zip
 
+# Ensure package.json exists for Docker build
+echo -e "${YELLOW}📦 Preparing Node.js dependencies...${NC}"
+if [ -f "package-web.json" ]; then
+    cp package-web.json package.json
+    echo -e "${GREEN}✅ package.json created from package-web.json${NC}"
+elif [ ! -f "package.json" ]; then
+    echo -e "${YELLOW}⚠️  package.json not found, creating minimal version...${NC}"
+    cat > package.json << 'EOF'
+{
+  "name": "automafy-web",
+  "version": "1.0.0",
+  "description": "AutomaFy Web Application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+EOF
+    echo -e "${GREEN}✅ Minimal package.json created${NC}"
+else
+    echo -e "${GREEN}✅ package.json already exists${NC}"
+fi
+
 # Set correct permissions
 chown -R automafy:automafy $APP_DIR
 
 # Build Docker image for AutomaFy Web
 echo -e "${YELLOW}🐳 Building AutomaFy Web Docker image...${NC}"
 docker build -t automafy-web:latest .
+
+# Verify Docker build was successful
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Docker build failed!${NC}"
+    echo -e "${YELLOW}🔧 Troubleshooting tips:${NC}"
+    echo -e "${YELLOW}  • Check if Dockerfile exists${NC}"
+    echo -e "${YELLOW}  • Verify package.json is valid${NC}"
+    echo -e "${YELLOW}  • Check Docker daemon is running${NC}"
+    echo -e "${YELLOW}  • Try: docker build -t automafy-web:latest . --no-cache${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ Docker image built successfully${NC}"
 
 # Create AutomaFy Web container with domain configuration
 echo -e "${YELLOW}🚀 Starting AutomaFy Web container...${NC}"
@@ -386,6 +424,30 @@ fi
 
 echo -e "${YELLOW}⏳ Waiting for all containers to start...${NC}"
 sleep 15
+
+# Verify containers are running
+echo -e "${YELLOW}🔍 Verifying container status...${NC}"
+CONTAINERS=("automafy-web" "redis" "redisinsight" "traefik" "portainer")
+FAILED_CONTAINERS=()
+
+for container in "${CONTAINERS[@]}"; do
+    if docker ps --format "table {{.Names}}" | grep -q "^$container$"; then
+        echo -e "${GREEN}✅ $container is running${NC}"
+    else
+        echo -e "${RED}❌ $container failed to start${NC}"
+        FAILED_CONTAINERS+=("$container")
+    fi
+done
+
+if [ ${#FAILED_CONTAINERS[@]} -gt 0 ]; then
+    echo -e "${RED}⚠️  Some containers failed to start: ${FAILED_CONTAINERS[*]}${NC}"
+    echo -e "${YELLOW}🔧 Troubleshooting commands:${NC}"
+    for container in "${FAILED_CONTAINERS[@]}"; do
+        echo -e "${YELLOW}  • Check $container logs: docker logs $container${NC}"
+        echo -e "${YELLOW}  • Restart $container: docker restart $container${NC}"
+    done
+    echo ""
+fi
 
 # Configure firewall (if ufw is available)
 if command -v ufw &> /dev/null; then

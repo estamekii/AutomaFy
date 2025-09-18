@@ -112,14 +112,26 @@ fi
 # Test 6: Port availability
 echo -e "${YELLOW}Test 6: Checking port availability...${NC}"
 
-PORTS_TO_CHECK=(3000 80 443 8080 9000)
+PORTS_TO_CHECK=(3000 80 443 8080 9000 6379 8001)
+PORTS_IN_USE=()
 for port in "${PORTS_TO_CHECK[@]}"; do
-    if netstat -tuln 2>/dev/null | grep -q ":$port "; then
+    if netstat -tuln 2>/dev/null | grep -q ":$port " || ss -tuln 2>/dev/null | grep -q ":$port "; then
         echo -e "${YELLOW}⚠️  WARNING: Port $port is already in use${NC}"
+        PORTS_IN_USE+=($port)
+        # Show what's using the port
+        PROCESS=$(netstat -tulnp 2>/dev/null | grep ":$port " | awk '{print $7}' | head -1)
+        if [ ! -z "$PROCESS" ]; then
+            echo -e "${YELLOW}   Process: $PROCESS${NC}"
+        fi
     else
         echo -e "${GREEN}✅ Port $port is available${NC}"
     fi
 done
+
+if [ ${#PORTS_IN_USE[@]} -gt 0 ]; then
+    echo -e "${YELLOW}🔧 Ports in use: ${PORTS_IN_USE[*]}${NC}"
+    echo -e "${YELLOW}   This may cause conflicts during installation${NC}"
+fi
 
 # Test 7: User permissions
 echo -e "${YELLOW}Test 7: Checking user creation capability...${NC}"
@@ -129,8 +141,48 @@ else
     echo -e "${GREEN}✅ User 'automafy' can be created${NC}"
 fi
 
+# Test 8: Node.js dependencies check
+echo -e "${YELLOW}Test 8: Checking Node.js project files...${NC}"
+if [ -f "package-web.json" ]; then
+    echo -e "${GREEN}✅ package-web.json found${NC}"
+elif [ -f "package.json" ]; then
+    echo -e "${GREEN}✅ package.json found${NC}"
+    # Check if it has express dependency
+    if grep -q "express" package.json; then
+        echo -e "${GREEN}✅ Express dependency found in package.json${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Express dependency not found in package.json${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠️  No package.json or package-web.json found${NC}"
+    echo -e "${YELLOW}   Installation script will create one automatically${NC}"
+fi
+
+if [ -f "server.js" ]; then
+    echo -e "${GREEN}✅ server.js found${NC}"
+else
+    echo -e "${YELLOW}⚠️  server.js not found${NC}"
+fi
+
+# Test 9: Firewall check
+echo -e "${YELLOW}Test 9: Checking firewall configuration...${NC}"
+if command -v ufw &> /dev/null; then
+    UFW_STATUS=$(ufw status | head -1)
+    echo -e "${GREEN}✅ UFW firewall available: $UFW_STATUS${NC}"
+    if ufw status | grep -q "Status: active"; then
+        echo -e "${YELLOW}ℹ️  UFW is active - installation will configure ports${NC}"
+    else
+        echo -e "${YELLOW}ℹ️  UFW is inactive - installation will enable it${NC}"
+    fi
+elif command -v firewall-cmd &> /dev/null; then
+    echo -e "${GREEN}✅ Firewalld available${NC}"
+else
+    echo -e "${YELLOW}⚠️  No firewall management tool found${NC}"
+    echo -e "${YELLOW}   Manual port configuration may be needed${NC}"
+fi
+
 echo ""
-echo -e "${GREEN}🎉 All tests passed! System is ready for AutomaFy installation.${NC}"
+echo -e "${GREEN}🎉 System compatibility check completed!${NC}"
 echo ""
 echo -e "${BLUE}To install AutomaFy Web, run one of these commands:${NC}"
 echo -e "${YELLOW}Quick install: curl -fsSL https://raw.githubusercontent.com/estamekii/AutomaFy/main/quick-install.sh | sudo bash${NC}"

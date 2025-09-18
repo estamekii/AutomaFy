@@ -72,7 +72,48 @@ chown -R automafy:automafy $APP_DIR
 # Install dependencies
 echo "📦 Installing application dependencies..."
 cd $APP_DIR
+
+# Ensure package.json exists and has correct content
+if [ ! -f "package.json" ]; then
+    echo "❌ package.json not found, creating minimal version..."
+    cat > package.json << 'EOF'
+{
+  "name": "automafy-web",
+  "version": "1.0.1",
+  "description": "AutomaFy Web - Application Installer for VPS",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
+EOF
+    chown automafy:automafy package.json
+fi
+
+# Install dependencies with error checking
+echo "📦 Installing Node.js dependencies..."
 sudo -u automafy npm install --production
+
+# Verify express was installed
+if [ ! -d "node_modules/express" ]; then
+    echo "❌ Express installation failed, trying manual install..."
+    sudo -u automafy npm install express --save
+fi
+
+# Final verification
+if [ ! -d "node_modules/express" ]; then
+    echo "❌ Critical error: Express could not be installed"
+    echo "🔧 Manual fix required: cd $APP_DIR && npm install express"
+    exit 1
+else
+    echo "✅ Dependencies installed successfully"
+fi
 
 # Create systemd service
 echo "🔧 Creating systemd service..."
@@ -202,17 +243,42 @@ fi
 echo "⏳ Waiting for containers to start..."
 sleep 10
 
+# Configure firewall BEFORE starting service
+if command -v ufw &> /dev/null; then
+    echo "🔥 Configuring firewall..."
+    ufw allow 3000/tcp
+    ufw allow 80/tcp
+    ufw allow 443/tcp
+    ufw allow 8080/tcp
+    ufw allow 9000/tcp
+    ufw allow 8001/tcp
+    ufw --force enable
+    echo "✅ Firewall configured"
+else
+    echo "⚠️  UFW not available, please configure firewall manually"
+fi
+
 # Enable and start service
 echo "🚀 Starting AutomaFy Web service..."
 systemctl daemon-reload
 systemctl enable automafy-web
 systemctl start automafy-web
 
-# Configure firewall (if ufw is available)
-if command -v ufw &> /dev/null; then
-    echo "🔥 Configuring firewall..."
-    ufw allow 3000/tcp
-    ufw --force enable
+# Wait for service to start
+sleep 5
+
+# Verify service is running
+if systemctl is-active --quiet automafy-web; then
+    echo "✅ AutomaFy Web service started successfully"
+else
+    echo "❌ AutomaFy Web service failed to start"
+    echo "🔍 Checking logs..."
+    journalctl -u automafy-web --no-pager -n 10
+    echo ""
+    echo "🔧 Manual troubleshooting:"
+    echo "  • Check logs: journalctl -u automafy-web -f"
+    echo "  • Check status: systemctl status automafy-web"
+    echo "  • Manual start: cd $APP_DIR && node server.js"
 fi
 
 # Get server IP

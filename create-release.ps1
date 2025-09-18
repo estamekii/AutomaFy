@@ -43,22 +43,22 @@ $headers = @{
 $url = "https://api.github.com/repos/$owner/$repo/releases"
 
 try {
-    Write-Host "🚀 Criando release $tag..." -ForegroundColor Yellow
+    Write-Host "[INFO] Criando release $tag..." -ForegroundColor Yellow
     
     # Faz a requisição para criar a release
     $response = Invoke-RestMethod -Uri $url -Method Post -Headers $headers -Body $releaseData -ContentType "application/json"
     
-    Write-Host "✅ Release criada com sucesso!" -ForegroundColor Green
-    Write-Host "📋 Nome: $($response.name)" -ForegroundColor Cyan
-    Write-Host "🏷️  Tag: $($response.tag_name)" -ForegroundColor Cyan
-    Write-Host "🔗 URL: $($response.html_url)" -ForegroundColor Cyan
-    Write-Host "📅 Criada em: $($response.created_at)" -ForegroundColor Cyan
+    Write-Host "[SUCCESS] Release criada com sucesso!" -ForegroundColor Green
+    Write-Host "Nome: $($response.name)" -ForegroundColor Cyan
+    Write-Host "Tag: $($response.tag_name)" -ForegroundColor Cyan
+    Write-Host "URL: $($response.html_url)" -ForegroundColor Cyan
+    Write-Host "Criada em: $($response.created_at)" -ForegroundColor Cyan
     
     # Abre a release no navegador
     Start-Process $response.html_url
     
 } catch {
-    Write-Error "❌ Erro ao criar release: $($_.Exception.Message)"
+    Write-Error "[ERROR] Erro ao criar release: $($_.Exception.Message)"
     
     if ($_.Exception.Response) {
         $errorResponse = $_.Exception.Response.GetResponseStream()
@@ -70,5 +70,5 @@ try {
     exit 1
 }
 
-Write-Host "`n🎉 Release v1.1.0 publicada com sucesso!" -ForegroundColor Green
-Write-Host "A página da release foi aberta no seu navegador." -ForegroundColor Yellow
+Write-Host "`n[SUCCESS] Release v1.1.0 publicada com sucesso!" -ForegroundColor Green
+Write-Host "A pagina da release foi aberta no seu navegador." -ForegroundColor Yellow

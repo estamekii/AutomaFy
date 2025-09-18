@@ -83,8 +83,49 @@ rm -rf $GITHUB_REPO-$GITHUB_BRANCH app.zip
 
 # Install app dependencies
 echo "📦 Installing app dependencies..."
-[ -f "package-web.json" ] && cp package-web.json package.json
+
+# Ensure package.json exists and has correct content
+if [ -f "package-web.json" ]; then
+    cp package-web.json package.json
+elif [ ! -f "package.json" ]; then
+    echo "❌ package.json not found, creating minimal version..."
+    cat > package.json << 'EOF'
+{
+  "name": "automafy-web",
+  "version": "1.0.1",
+  "description": "AutomaFy Web - Application Installer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
+EOF
+fi
+
+# Install dependencies with error checking
+echo "📦 Installing Node.js dependencies..."
 npm install --production
+
+# Verify express was installed
+if [ ! -d "node_modules/express" ]; then
+    echo "❌ Express installation failed, trying manual install..."
+    npm install express --save
+fi
+
+# Final verification
+if [ ! -d "node_modules/express" ]; then
+    echo "❌ Critical error: Express could not be installed"
+    echo "🔧 Manual fix required: cd $APP_DIR && npm install express"
+    exit 1
+else
+    echo "✅ Dependencies installed successfully"
+fi
 
 # Create systemd service
 echo "🔧 Creating service..."
@@ -105,10 +146,38 @@ Environment=PORT=3000
 WantedBy=multi-user.target
 EOF
 
+# Configure firewall
+if command -v ufw &> /dev/null; then
+    echo "🔥 Configuring firewall..."
+    ufw allow 3000/tcp
+    ufw --force enable
+    echo "✅ Firewall configured"
+else
+    echo "⚠️  UFW not available, please configure firewall manually"
+fi
+
 # Start service
+echo "🚀 Starting AutomaFy Web service..."
 systemctl daemon-reload
 systemctl enable automafy-web
 systemctl start automafy-web
+
+# Wait for service to start
+sleep 5
+
+# Verify service is running
+if systemctl is-active --quiet automafy-web; then
+    echo "✅ AutomaFy Web service started successfully"
+else
+    echo "❌ AutomaFy Web service failed to start"
+    echo "🔍 Checking logs..."
+    journalctl -u automafy-web --no-pager -n 10
+    echo ""
+    echo "🔧 Manual troubleshooting:"
+    echo "  • Check logs: journalctl -u automafy-web -f"
+    echo "  • Check status: systemctl status automafy-web"
+    echo "  • Manual start: cd $APP_DIR && node server.js"
+fi
 
 # Get IP
 IP=$(curl -s ifconfig.me || hostname -I | awk '{print $1}')
@@ -117,8 +186,9 @@ echo ""
 echo "✅ Installation complete!"
 echo "🌐 Access: http://$IP:3000"
 echo ""
-echo "Commands:"
-echo "  Status: systemctl status automafy-web"
-echo "  Logs:   journalctl -u automafy-web -f"
-echo "  Stop:   systemctl stop automafy-web"
+echo "📋 Useful commands:"
+echo "  • Status: systemctl status automafy-web"
+echo "  • Logs:   journalctl -u automafy-web -f"
+echo "  • Stop:   systemctl stop automafy-web"
+echo "  • Restart: systemctl restart automafy-web"
 echo ""
